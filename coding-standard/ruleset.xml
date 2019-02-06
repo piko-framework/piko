@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="piko">
+	<description>
+		Piko 2 Web Application Framework Coding Standard
+	</description>
+
+	<!-- Displays progress -->
+	<arg value="p"/>
+	<arg name="colors"/>
+	<arg name="tab-width" value="4"/>
+
+	<rule ref="PSR2">
+		<!-- We want sometimes add new lines before or after control structure for better readability -->
+		<exclude name="Squiz.WhiteSpace.ControlStructureSpacing.SpacingAfterOpen" />
+		<exclude name="Squiz.WhiteSpace.ControlStructureSpacing.SpacingBeforeClose" />
+		<exclude-pattern>tests?/*.php$</exclude-pattern>
+	</rule>
+
+	<!--Space after cast ((int) $var). -->
+	<rule ref="Generic.Formatting.SpaceAfterCast" />
+
+	<!-- File comment rule. -->
+	<rule ref="PEAR.Commenting.FileComment">
+		<!-- We don't don't need to check PHP version -->
+		<exclude name="PEAR.Commenting.FileComment.MissingVersion"/>
+		<!-- We don't don't need category, package and author tags -->
+		<exclude name="PEAR.Commenting.FileComment.MissingCategoryTag"/>
+		<exclude name="PEAR.Commenting.FileComment.MissingPackageTag"/>
+		<exclude name="PEAR.Commenting.FileComment.MissingAuthorTag"/>
+		<exclude-pattern>tests?/*.php$</exclude-pattern>
+	</rule>
+	
+	<!-- Class comment rule. -->
+	<rule ref="PEAR.Commenting.ClassComment">
+		<!-- We don't don't need category, package, link and license tags -->
+		<exclude name="PEAR.Commenting.ClassComment.MissingCategoryTag"/>
+		<exclude name="PEAR.Commenting.ClassComment.MissingPackageTag"/>
+		<exclude name="PEAR.Commenting.ClassComment.MissingLinkTag"/>
+		<exclude name="PEAR.Commenting.ClassComment.MissingLicenseTag"/>
+		<exclude-pattern>tests?/*.php$</exclude-pattern>
+	</rule>
+
+	<!-- Class members comment rule. -->
+	<rule ref="Squiz.Commenting.VariableComment">
+		<exclude-pattern>tests?/*.php$</exclude-pattern>
+	</rule>
+	
+	<rule ref="Squiz.Functions.FunctionDeclarationArgumentSpacing">
+		<properties>
+			<property name="equalsSpacing" value="1" />
+		</properties>
+	</rule>
+
+	<rule ref="Squiz.Strings.ConcatenationSpacing">
+		<properties>
+			<property name="spacing" value="1" />
+		</properties>
+	</rule>
+	
+	<rule ref="Squiz.WhiteSpace.SuperfluousWhitespace" />
+
+</ruleset>
