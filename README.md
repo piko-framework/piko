@@ -1,6 +1,16 @@
 # Piko
 
-Piko is a Web micro Framework inspired by Yii2 Framework to build MVC application.
+Piko is a Web micro Framework inspired by Yii2 Framework to build MVC applications.
+It requires no dependencies and should be sufficient for simple projects.
+
+The framework approach is modular : each request is dispatched to internal route which corresponds to a module,
+a controller and a controller action.
+
+Each component of the framework is an event manager. It's possible to inject custom code when events are triggered.
+
+The view rendering is done in two stages : one for the global layout and one for the controller action rendering.
+
+Also, the framework offers simple ways to manipulate databases and to manage users.
 
 ## Installation via composer
 
@@ -10,20 +20,22 @@ composer require ilhooq/piko
 
 ## Getting started
 
-A trivial exemple in index.php :
+A trivial example :
 
 ```php
 <?php
 use piko\Application;
+use piko\Module;
+use piko\Controller;
 
 require('vendor/autoload.php');
 
-class SiteModule extends \piko\Module
+class SiteModule extends Module
 {
 
 }
 
-class HelloController extends \piko\Controller
+class HelloController extends Controller
 {
     public $layout = false;
 
@@ -86,6 +98,25 @@ The router associate the uri /hello/(\w+) to the route `site/hello/index2|name=$
 Finally, the uri can math the route with `'^/(\w+)/(\w+)/(\w+)' => '$1/$2/$3'`.
 If you go to `http://localhost:8080/site/hello/index3` you will get "Hello guy!".
 
-To have a more advanced usage, take a look on the basic [Piko project skeletton](https://github.com/ilhooq/piko-project).
+## Quick start application
+
+The [Piko project skeletton](https://github.com/ilhooq/piko-project) is an example on how to structure a Piko based application.
+
+1. Install
+
+```bash
+composer global require "fxp/composer-asset-plugin:^1.3.1"
+composer create-project ilhooq/piko-project yourproject
+```
+
+2. Run
+
+```bash
+cd yourproject && php -S localhost:8080 -t web
+```
+
+## Inspiration
+
+The concepts used in Piko are heavily inspired by [Yii2 framework](https://www.yiiframework.com/).
 
 
