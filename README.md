@@ -110,7 +110,6 @@ at [getcomposer.org](http://getcomposer.org/doc/00-intro.md#installation-nix).
 You can then install this project template using the following command:
 
 ```bash
-php composer.phar global require "fxp/composer-asset-plugin:^1.3.1"
 php composer.phar create-project ilhooq/piko-project yourproject
 ```
 
