@@ -25,9 +25,9 @@ class HttpException extends \Exception
     {
         parent::__construct($message, $code, $previous);
 
-        if ($e->getCode() && php_sapi_name() != 'cli') {
+        if ($this->getCode() && php_sapi_name() != 'cli') {
             $protocol = isset($_SERVER['SERVER_PROTOCOL'])? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0';
-            header($protocol . ' ' . $e->getCode() . ' ' . $e->getMessage());
+            header($protocol . ' ' . $this->getCode() . ' ' . $this->getMessage());
         }
     }
 }
