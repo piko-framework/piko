@@ -92,7 +92,7 @@ class Application extends Component
             }
         }
 
-        $baseUrl = str_replace($_SERVER['SCRIPT_NAME'], '', $_SERVER['SCRIPT_FILENAME']);
+        $baseUrl = str_replace(trim($_SERVER['SCRIPT_NAME'], '/'), '', $_SERVER['SCRIPT_FILENAME']);
         $baseUrl = str_replace($_SERVER['DOCUMENT_ROOT'], '', $baseUrl);
 
         Piko::setAlias('@web', $baseUrl);
