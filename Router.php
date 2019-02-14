@@ -42,7 +42,7 @@ class Router extends Component
     public function resolve()
     {
         $route = '';
-        $uri = $_SERVER['REQUEST_URI'];
+        $uri = str_replace(Piko::getAlias('@web'), '', $_SERVER['REQUEST_URI']);
 
         if (($start = strpos($uri, '?')) !== false) {
             $uri = substr($uri, 0, $start - 1);
