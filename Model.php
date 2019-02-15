@@ -48,7 +48,7 @@ class Model extends Component
      */
     public function bind($data)
     {
-        $this->data = $data;
+        $this->data = array_merge($this->data, $data);
     }
 
     /**
