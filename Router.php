@@ -70,4 +70,59 @@ class Router extends Component
 
         return $route;
     }
+
+    /**
+     * Convert a route to an url.
+     * @param string $route The route given as '{moduleId}/{controllerId}/{ationId}'.
+     * @param array $params Optional query parameters.
+     * @return string The url.
+     */
+    public function getUrl($route, $params = [])
+    {
+        $uri = '';
+
+        foreach ($this->routes as $uriPattern => $routePattern) {
+
+            $strParams = '';
+
+            if (!empty($params) && ($pos = strpos($routePattern, '|')) !== false) {
+                $strParams = substr($routePattern, $pos + 1);
+                $routePattern = substr($routePattern, 0, $pos);
+            }
+
+            if ($route == $routePattern) {
+
+                $uriPattern = str_replace(['^', '$'], '', $uriPattern);
+
+                if (!empty($params) && !empty($strParams)) {
+                    parse_str($strParams, $res);
+                    $replacements = [];
+
+                    foreach ($res as $k => $v) {
+                        if (isset($params[$k])) {
+                            $pos = str_replace('$', '', $v);
+                            $replacements[$pos] =  $params[$k];
+                        }
+                    }
+
+                    $uriPattern = preg_replace_callback('`\(.*?\)`', function($matches) use ($replacements) {
+                        static $count = 1;
+                        $value = $replacements[$count];
+                        $count++;
+                        return $value;
+                    }, $uriPattern);
+                }
+
+                $uri = $uriPattern;
+                break;
+            }
+        }
+
+        if (empty($uri)) {
+            $route = rtrim($route, '/');
+            $uri = '/' . (empty($params)? $route : $route . '/?' . http_build_query($params));
+        }
+
+        return Piko::getAlias('@web') . $uri;
+    }
 }
