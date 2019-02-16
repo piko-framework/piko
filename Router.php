@@ -105,7 +105,7 @@ class Router extends Component
                         }
                     }
 
-                    $uriPattern = preg_replace_callback('`\(.*?\)`', function($matches) use ($replacements) {
+                    $uriPattern = preg_replace_callback('`\(.*?\)`', function ($matches) use ($replacements) {
                         static $count = 1;
                         $value = $replacements[$count];
                         $count++;

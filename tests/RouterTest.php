@@ -33,7 +33,7 @@ class RouterTest extends TestCase
             $_SERVER['REQUEST_URI'] = $base . '/';
             $this->assertEquals('test/test/index', $router->resolve());
 
-            $_SERVER['REQUEST_URI'] = $base .'/user/10';
+            $_SERVER['REQUEST_URI'] = $base . '/user/10';
             $this->assertEquals('user/default/view', $router->resolve());
             $this->assertEquals(10, $_GET['id']);
 
