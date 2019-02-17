@@ -81,12 +81,12 @@ class View extends Component
     {
         if (!empty($this->cssFiles)) {
             foreach ($this->cssFiles as $url) {
-                $this->head[] = '<link href="' . $url . '" rel="stylesheet" />';
+                $this->head[] = '<link href="' . $url . '" rel="stylesheet">';
             }
         }
 
         if (!empty($this->css)) {
-            $this->head[] = '<style type="text/css">';
+            $this->head[] = '<style>';
 
             foreach ($this->css as $css) {
                 $this->head[] = $css;
@@ -96,7 +96,7 @@ class View extends Component
         }
 
         if (!empty($this->js[self::POS_HEAD])) {
-            $this->head[] = '<script type="text/javascript">';
+            $this->head[] = '<script>';
 
             foreach ($this->js[self::POS_HEAD] as $js) {
                 $this->head[] = $js;
@@ -116,12 +116,12 @@ class View extends Component
     {
         if (!empty($this->jsFiles[self::POS_END])) {
             foreach ($this->jsFiles[self::POS_END] as $url) {
-                $this->endBody[] = '<script type="text/javascript" src="' . $url . '"></script>';
+                $this->endBody[] = '<script src="' . $url . '"></script>';
             }
         }
 
         if (!empty($this->js[self::POS_END])) {
-            $this->endBody[] = '<script type="text/javascript">' . PHP_EOL;
+            $this->endBody[] = '<script>' . PHP_EOL;
 
             foreach ($this->js[self::POS_END] as $js) {
                 $this->endBody[] = $js;
