@@ -63,6 +63,7 @@ class RouterTest extends TestCase
             ));
             $this->assertEquals($base . '/blog/default/index', $router->getUrl('blog/default/index'));
             $this->assertEquals($base . '/blog/default/view/?id=2', $router->getUrl('blog/default/view', ['id' => 2]));
+            $this->assertEquals($base . '/css/site.css', $router->getUrl('css/site.css'));
         }
     }
 }
