@@ -30,6 +30,7 @@ class Model extends Component
     {
         return isset($this->data[$attribute]) ? $this->data[$attribute] : null;
     }
+
     /**
      * Magick method to set model's data as class attribute.
      *
@@ -39,6 +40,27 @@ class Model extends Component
     public function __set($attribute, $value)
     {
         $this->data[$attribute] = $value;
+    }
+
+    /**
+     * Magick method to check if attribute is defined in model's data.
+     *
+     * @param string $attribute The attribute's name.
+     */
+    public function __isset($attribute)
+    {
+        return isset($this->data[$attribute]);
+    }
+
+    /** Magick method to unset attribute in model's data.
+     *
+     * @param string $attribute The attribute's name.
+     */
+     public function __unset($attribute)
+     {
+         if (isset($this->data[$attribute])) {
+             unset($this->data[$attribute]);
+         }
     }
 
     /**
