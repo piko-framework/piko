@@ -215,7 +215,9 @@ class DbRecord extends Model
             throw new \RuntimeException("Query failed with error {$error[0]} : {$error[2]}");
         }
 
-        $this->data[$this->primaryKey] = $this->db->lastInsertId();
+        if ($insert) {
+            $this->data[$this->primaryKey] = $this->db->lastInsertId();
+        }
 
         $this->afterSave();
 

@@ -53,6 +53,7 @@ EOL;
 
         $contact->save();
 
+        $this->assertEquals(1, $contact->id);
         $this->assertEquals('Sylvain Philip updated', $contact->name);
     }
 
