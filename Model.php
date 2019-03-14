@@ -56,11 +56,11 @@ class Model extends Component
      *
      * @param string $attribute The attribute's name.
      */
-     public function __unset($attribute)
-     {
-         if (isset($this->data[$attribute])) {
-             unset($this->data[$attribute]);
-         }
+    public function __unset($attribute)
+    {
+        if (isset($this->data[$attribute])) {
+            unset($this->data[$attribute]);
+        }
     }
 
     /**
