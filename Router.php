@@ -51,7 +51,7 @@ class Router extends Component
         $uri = '/' . trim($uri, '/');
 
         foreach ($this->routes as $uriPattern => $routePattern) {
-            if (preg_match('`' . $uriPattern . '`', $uri, $matches)) {
+            if (preg_match('`' . $uriPattern . '`', $uri)) {
                 $route = preg_replace('`' . $uriPattern . '`', $routePattern, $uri);
                 break;
             }
@@ -59,6 +59,7 @@ class Router extends Component
 
         // Parse route request parameters
         if (($start = strpos($route, '|')) !== false) {
+            $params = [];
             parse_str(substr($route, $start + 1), $params);
 
             foreach ($params as $k => $v) {
@@ -95,6 +96,7 @@ class Router extends Component
                 $uriPattern = str_replace(['^', '$'], '', $uriPattern);
 
                 if (!empty($params) && !empty($strParams)) {
+                    $res = [];
                     parse_str($strParams, $res);
                     $replacements = [];
 

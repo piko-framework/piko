@@ -18,7 +18,7 @@ CREATE TABLE contact (
   lastname TEXT
 )
 EOL;
-        $res = $db->exec($query);
+        $db->exec($query);
     }
 
     public function testCreate()

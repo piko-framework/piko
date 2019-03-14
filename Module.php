@@ -65,7 +65,7 @@ class Module extends Component
     public function run($controllerId, $actionId)
     {
         $controllerName = str_replace(' ', '', ucwords(str_replace('-', ' ', $controllerId))) . 'Controller';
-        $actionName = str_replace(' ', '', ucwords(str_replace('-', ' ', $actionId))) . 'Action';
+        $actionId = str_replace(' ', '', ucwords(str_replace('-', ' ', $actionId)));
 
         $controllerClass = isset($this->controllerMap[$controllerId])?
                            $this->controllerMap[$controllerId] :
