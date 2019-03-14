@@ -99,12 +99,19 @@ class Router extends Component
                     $res = [];
                     parse_str($strParams, $res);
                     $replacements = [];
+                    $diff = false;
 
                     foreach ($res as $k => $v) {
-                        if (isset($params[$k])) {
-                            $pos = str_replace('$', '', $v);
-                            $replacements[$pos] =  $params[$k];
+                        if (!isset($params[$k]) || (strpos($v, '$') === false && $params[$k] != $v)) {
+                            $diff = true;
+                            break;
                         }
+                        $pos = str_replace('$', '', $v);
+                        $replacements[$pos] =  $params[$k];
+                    }
+
+                    if ($diff) {
+                        continue;
                     }
 
                     $uriPattern = preg_replace_callback('`\(.*?\)`', function ($matches) use ($replacements) {
