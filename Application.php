@@ -95,6 +95,7 @@ class Application extends Component
         $baseUrl = isset($config['baseUrl'])? $config['baseUrl'] : rtrim(dirname($_SERVER['SCRIPT_NAME']), '\\/');
 
         Piko::setAlias('@web', $baseUrl);
+        Piko::setAlias('@webroot', dirname($_SERVER['SCRIPT_FILENAME']));
         Piko::setAlias('@app', $this->basePath);
 
         $this->config = $config;
