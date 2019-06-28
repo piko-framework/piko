@@ -30,6 +30,11 @@ class Component
     public $events = [];
 
     /**
+     * @var array Static event handlers container.
+     */
+    public static $events2 = [];
+
+    /**
      * Constructor
      *
      * @param array $config A configuration array to set public properties of the class.
@@ -89,6 +94,30 @@ class Component
     }
 
     /**
+     * Static event registration.
+     *
+     * @param string $eventName The event name to register.
+     * @param mixed $callback The event handler to register. Must be  one of the following:
+     *                        - A Closure (function(){ ... })
+     *                        - An object method ([$object, 'methodName'])
+     *                        - A static class method ('MyClass::myMethod')
+     *                        - A global function ('myFunction')
+     * @param string $priority The order priority in the events stack ('after' or 'before'). Default to 'after'.
+     */
+    public static function when($eventName = '', $callback = null, $priority = 'after')
+    {
+        if (! isset(static::$events2[$eventName])) {
+            static::$events2[$eventName] = [];
+        }
+
+        if ($priority == 'before') {
+            array_unshift(static::$events2[$eventName], $callback);
+        } else {
+            static::$events2[$eventName][] = $callback;
+        }
+    }
+
+    /**
      * Trigger an event.
      *
      * Event handlers corresponding to this event will be called in the order they are registered.
@@ -103,6 +132,12 @@ class Component
 
         if (isset($this->events[$eventName])) {
             foreach ($this->events[$eventName] as $callback) {
+                $return[] = call_user_func_array($callback, $args);
+            }
+        }
+
+        if (isset(static::$events2[$eventName])) {
+            foreach (static::$events2[$eventName] as $callback) {
                 $return[] = call_user_func_array($callback, $args);
             }
         }

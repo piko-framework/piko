@@ -25,6 +25,13 @@ class ComponentTest extends TestCase
             return $a + $b + $c;
         });
 
+        \piko\Component::when('test', function ($a, $b, $c) {
+            $this->assertEquals(1, $a);
+            $this->assertEquals(2, $b);
+            $this->assertEquals(3, $c);
+            return $a + $b + $c;
+        });
+
         // Test registering a method
         $component->on('test', [$this, 'onTestEvent2']);
 
@@ -33,7 +40,7 @@ class ComponentTest extends TestCase
 
         $result = $component->trigger('test', [1, 2, 3]);
 
-        $this->assertEquals(18, array_sum($result));
+        $this->assertEquals(24, array_sum($result));
 
         // Test passing a parameter by reference
         $content = 'Test';
