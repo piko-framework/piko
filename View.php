@@ -79,6 +79,8 @@ class View extends Component
      */
     protected function head()
     {
+        $this->trigger('beforeHead');
+
         if (!empty($this->cssFiles)) {
             foreach ($this->cssFiles as $url) {
                 $this->head[] = '<link href="' . $url . '" rel="stylesheet">';
@@ -114,6 +116,8 @@ class View extends Component
      */
     protected function endBody()
     {
+        $this->trigger('beforeEndBody');
+
         if (!empty($this->jsFiles[self::POS_END])) {
             foreach ($this->jsFiles[self::POS_END] as $url) {
                 $this->endBody[] = '<script src="' . $url . '"></script>';
