@@ -47,7 +47,7 @@ class Controller extends Component
      */
     public function runAction($id)
     {
-        $this->trigger('beforeAction', [$this->module->id, $id]);
+        $this->trigger('beforeAction', [$this]);
 
         $methodName = $id . 'Action';
 
@@ -56,7 +56,7 @@ class Controller extends Component
         }
 
         $output = $this->$methodName();
-        $this->trigger('afterAction', [$this->module->id, $id, $output]);
+        $this->trigger('afterAction', [$this, $output]);
 
         return $output;
     }
