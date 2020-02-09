@@ -139,4 +139,18 @@ class Piko
             $object->$key = $value;
         }
     }
+
+    /**
+     * Translate a text.
+     * This is a shortcut to translate method in i18n component.
+     *
+     * @param string $domain The translation domain, for instance 'app'.
+     * @param string $text The text to translate.
+     *
+     * @return string The translated text or the text itself if no translation was found.
+     */
+    public static function t($domain, $text)
+    {
+        return static::get('i18n')->translate($domain, $text);
+    }
 }
