@@ -1,7 +1,4 @@
 <?php
-define('SRC_ROOT', dirname(__DIR__));
 
-require SRC_ROOT . '/Piko.php';
-$autoloader = require(SRC_ROOT . '/vendor/autoload.php');
-// $autoloader->addPsr4('piko\\', [SRC_ROOT]);
+$autoloader = require(dirname(__DIR__) . '/vendor/autoload.php');
 $autoloader->addPsr4('tests\\', [__DIR__]);
