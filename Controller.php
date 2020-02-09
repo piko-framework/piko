@@ -42,13 +42,18 @@ class Controller extends Component
      */
     public function runAction($id)
     {
+        $this->trigger('beforeAction', [$this->module->id, $id]);
+
         $methodName = $id . 'Action';
 
         if (!method_exists($this, $methodName)) {
             throw new \RuntimeException("Method \"$methodName\" not found in " . get_class($this));
         }
 
-        return $this->$methodName();
+        $output = $this->$methodName();
+        $this->trigger('afterAction', [$this->module->id, $id, $output]);
+
+        return $output;
     }
 
     /**
