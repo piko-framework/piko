@@ -42,6 +42,11 @@ class Module extends Component
     public $layout;
 
     /**
+     * @var string the root directory of the module.
+     */
+    private $basePath;
+
+    /**
      * {@inheritDoc}
      * @see \piko\Component::init()
      */
@@ -53,6 +58,20 @@ class Module extends Component
                 $this->controllerNamespace = substr($class, 0, $pos) . '\\controllers';
             }
         }
+    }
+
+    /**
+     * Returns the root directory of the module.
+     * @return string the root directory of the module.
+     */
+    public function getBasePath()
+    {
+        if ($this->basePath === null) {
+            $class = new \ReflectionClass($this);
+            $this->basePath = dirname($class->getFileName());
+        }
+
+        return $this->basePath;
     }
 
     /**
@@ -73,6 +92,7 @@ class Module extends Component
 
         $controller = new $controllerClass;
         $controller->module = $this;
+        $controller->id = $controllerId;
 
         $output = $controller->runAction($actionId);
 

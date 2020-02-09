@@ -16,6 +16,11 @@ namespace piko;
 class Controller extends Component
 {
     /**
+     * @var string The controller identifier.
+     */
+    public $id = '';
+
+    /**
      * @var null|string|false The name of the layout to be applied to this controller's views.
      * This property mainly affects the behavior of render().
      * Defaults to null, meaning the actual layout value should inherit that from module's layout value.
@@ -80,16 +85,11 @@ class Controller extends Component
      */
     protected function getViewPath()
     {
-        if (!empty($this->viewPath)) {
-            return $this->viewPath;
+        if (empty($this->viewPath)) {
+            $this->viewPath = $this->module->getBasePath()
+                            . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . $this->id;
         }
 
-        $relativePath = str_replace(
-            ['app/', '/controllers', 'Controller'],
-            ['', '/views', ''],
-            str_replace('\\', '/', get_class($this))
-        );
-
-        return Piko::$app->basePath . '/' . strtolower($relativePath);
+        return $this->viewPath;
     }
 }
