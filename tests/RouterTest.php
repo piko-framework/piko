@@ -17,6 +17,7 @@ class RouterTest extends TestCase
                 '^/portfolio/(\w+)/(\d+)' => 'portfolio/default/view|alias=$1&category=$2',
                 '^/page-1' => 'page/default/view|alias=page-1',
                 '^/page-2' => 'page/default/view|alias=page-2',
+                '^/admin/(\w+)/(\w+)/(\d+)' => '$1/admin/$2|id=$3',
                 '^/(\w+)/(\w+)/(\w+)' => '$1/$2/$3'
             ]
         ]);
@@ -54,6 +55,9 @@ class RouterTest extends TestCase
 
             $_SERVER['REQUEST_URI'] = $base . '/blog/default/index';
             $this->assertEquals('blog/default/index', $router->resolve());
+
+            $_SERVER['REQUEST_URI'] = $base . '/admin/user/edit/5';
+            $this->assertEquals('user/admin/edit', $router->resolve());
         }
     }
 
@@ -75,7 +79,7 @@ class RouterTest extends TestCase
             $this->assertEquals($base . '/page-2',  $router->getUrl('page/default/view', ['alias' => 'page-2']));
             $this->assertEquals($base . '/blog/default/index', $router->getUrl('blog/default/index'));
             $this->assertEquals($base . '/blog/default/view/?id=2', $router->getUrl('blog/default/view', ['id' => 2]));
-            $this->assertEquals($base . '/css/site.css', $router->getUrl('css/site.css'));
+            $this->assertEquals($base . '/admin/user/edit/5', $router->getUrl('user/admin/edit', ['id' => 5]));
         }
     }
 }
