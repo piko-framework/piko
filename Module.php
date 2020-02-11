@@ -94,7 +94,7 @@ class Module extends Component
         $controller->module = $this;
         $controller->id = $controllerId;
 
-        $output = $controller->runAction($actionId);
+        $output = $controller->runAction(lcfirst($actionId));
 
         if ($controller->layout) {
             $this->layout = $controller->layout;
