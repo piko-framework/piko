@@ -6,9 +6,7 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/ilhooq/piko
  */
-namespace Piko;
-
-use piko\Piko;
+namespace piko;
 
 /**
  * AssetBundle represents a collection of CSS files and JS files to publish inside the public path.
@@ -26,7 +24,7 @@ class AssetBundle extends Component
      * @var string the directory that contains the source asset files for this asset bundle.
      * You can use either a directory or an alias of the directory.
      */
-    public $sourcePath;
+    public $sourcePath = '';
 
     /**
      * @var array list of JavaScript files that this bundle contains.
@@ -54,6 +52,18 @@ class AssetBundle extends Component
      */
     public $publishedBaseUrl = '@web/assets';
 
+    /**
+     * @var array Bundle dependencies.
+     */
+    public $dependencies = [];
+
+    /**
+     * @var AssetBundle[] list of the registered asset bundles. The keys are the bundle names, and the values
+     * are the registered [[AssetBundle]] objects.
+     * @see register()
+     */
+    protected static $assetBundles = [];
+
 
     /**
      * Registers this asset bundle with a view.
@@ -65,6 +75,18 @@ class AssetBundle extends Component
     {
         $className = get_called_class();
         $bundle = new $className();
+
+        if (isset(static::$assetBundles[$className])) {
+            return static::$assetBundles[$className];
+        }
+
+        $bundle->trigger('register', [$className, $bundle]);
+
+        static::$assetBundles[$className] = $bundle;
+
+        foreach ($bundle->dependencies as $class) {
+            call_user_func($class . '::register', $view);
+        }
 
         $beforeHead = function () use ($bundle) {
             /* @var $this View */
@@ -129,6 +151,10 @@ class AssetBundle extends Component
      */
     protected function copy($src, $dest)
     {
+        if (!file_exists($src)) {
+            throw new \RuntimeException("Src: $src does not exists.");
+        }
+
         $dir = opendir($src);
         mkdir($dest, 0755, true);
 
