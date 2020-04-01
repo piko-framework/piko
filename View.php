@@ -74,6 +74,25 @@ class View extends Component
     public $endBody = [];
 
     /**
+     * @var array Theme map configuration. A key paired array where each key represents
+     * a path to override and the value, the mapped path. The value could be either a string
+     * or an array of path and in this case, it may be possibe to use child themes.
+     * Configuration example :
+     * ...
+     * 'view' => [
+     *     'class' => 'piko\View',
+     *     'themeMap' => [
+     *         '@app/modules/site/views' => [
+     *             '@app/themes/child-theme',
+     *             '@app/themes/parent-theme',
+     *         ],
+     *         '@app/modules/admin/views' => '@app/themes/piko/admin',
+     *     ],
+     * ],
+     */
+    public $themeMap = [];
+
+    /**
      * Assemble html in the head position.
      * @return string The head html.
      */
@@ -208,6 +227,30 @@ class View extends Component
         throw new \RuntimeException("Cannot find the view file for the viewname: $viewName");
     }
 
+    protected function applyTheme($path)
+    {
+        if (!empty($this->themeMap)) {
+
+            foreach ($this->themeMap as $from => $tos) {
+                $from = Piko::getAlias($from);
+
+                if (strpos($path, $from) === 0) {
+                    $n = strlen($from);
+
+                    foreach ((array) $tos as $to) {
+                        $to = Piko::getAlias($to);
+                        $file = $to . substr($path, $n);
+                        if (is_file($file)) {
+                            return $file;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $path;
+    }
+
     /**
      * Render the view.
      *
@@ -217,9 +260,11 @@ class View extends Component
      */
     public function render($file, $model = [])
     {
-        if (! file_exists($file)) {
+        if (!file_exists($file)) {
             $file = $this->findFile($file);
         }
+
+        $file = $this->applyTheme($file);
 
         $this->trigger('beforeRender', [
             $file,
