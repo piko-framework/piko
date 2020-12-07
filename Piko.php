@@ -146,11 +146,16 @@ class Piko
      *
      * @param string $domain The translation domain, for instance 'app'.
      * @param string $text The text to translate.
+     * @param array $params Parameters substitution.
      *
      * @return string The translated text or the text itself if no translation was found.
+     *
+     * @see \piko\I18n
      */
-    public static function t($domain, $text)
+    public static function t($domain, $text, $params = [])
     {
-        return static::get('i18n')->translate($domain, $text);
+        $i18n = static::get('i18n');
+
+        return is_object($i18n) ? $i18n->translate($domain, $text, $params) : $text;
     }
 }

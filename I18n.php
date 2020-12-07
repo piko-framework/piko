@@ -53,11 +53,18 @@ class I18n extends Component
      *
      * @param string $domain The translation domain, for instance 'app'.
      * @param string $text The text to translate.
+     * @param array $params Parameters substitution, eg. $this->translate('site', 'Hello {name}', ['name' => 'John']).
      *
      * @return string The translated text or the text itself if no translation was found.
      */
-    public function translate($domain, $text)
+    public function translate($domain, $text, $params = [])
     {
-        return isset($this->messages[$domain][$text]) ? $this->messages[$domain][$text] : $text;
+        $text = isset($this->messages[$domain][$text]) ? $this->messages[$domain][$text] : $text;
+
+        foreach ($params as $k => $v) {
+            $text = str_replace('{' . $k . '}', $v, $text);
+        }
+
+        return $text;
     }
 }
