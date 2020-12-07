@@ -3,4 +3,3 @@
 /.gitignore         export-ignore
 /phpunit.xml        export-ignore
 /tests              export-ignore
-/coding-standard    export-ignore
