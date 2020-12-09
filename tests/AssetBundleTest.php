@@ -9,8 +9,8 @@ class TestBundle extends AssetBundle
 {
     public $name = 'test';
     public $sourcePath =  __DIR__ . '/testBundle/sources';
-    public $js = ['test.js'];
-    public $css = ['test.css'];
+    public $js = ['test.js', 'http://domain.com/js/test.js'];
+    public $css = ['test.css', 'http://domain.com/css/test.css'];
 }
 
 class AssetBundleTest extends TestCase
@@ -46,5 +46,7 @@ class AssetBundleTest extends TestCase
 
         $this->assertRegExp('`<link href="/assets/test/test.css" rel="stylesheet">`', $output);
         $this->assertRegExp('`<script src="/assets/test/test.js"></script>`', $output);
+        $this->assertRegExp('`<link href="http://domain.com/css/test.css" rel="stylesheet">`', $output);
+        $this->assertRegExp('`<script src="http://domain.com/js/test.js"></script>`', $output);
     }
 }

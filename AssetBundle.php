@@ -88,43 +88,22 @@ class AssetBundle extends Component
             call_user_func($class . '::register', $view);
         }
 
-        $beforeHead = function () use ($bundle) {
-            /* @var $this View */
-            $bundle->publish();
+        $bundle->publish();
 
-            foreach ($bundle->css as $cssFile) {
-                $this->registerCSSFile(
-                    Piko::getAlias($bundle->publishedBaseUrl) . '/' . $bundle->name . '/' . $cssFile
-                );
+        $getFileUrl = function ($file) use ($bundle) {
+            if (preg_match('/^http:/', $file)) {
+                return $file;
             }
 
-            if ($bundle->jsPosition == View::POS_HEAD) {
-                foreach ($bundle->js as $jsFile) {
-                    $this->registerJsFile(
-                        Piko::getAlias($bundle->publishedBaseUrl) . '/' . $bundle->name . '/' . $jsFile,
-                        View::POS_HEAD
-                    );
-                }
-            }
+            return Piko::getAlias($bundle->publishedBaseUrl) . '/' . $bundle->name . '/' . $file;
         };
 
-        $view->on('beforeHead', $beforeHead->bindTo($view));
+        foreach ($bundle->css as $cssFile) {
+            $view->registerCSSFile($getFileUrl($cssFile));
+        }
 
-        if ($bundle->jsPosition == View::POS_END) {
-
-            $beforeEndBody = function () use ($bundle) {
-                /* @var $this View */
-                $bundle->publish();
-
-                foreach ($bundle->js as $jsFile) {
-                    $this->registerJsFile(
-                        Piko::getAlias($bundle->publishedBaseUrl) . '/' . $bundle->name . '/' . $jsFile,
-                        View::POS_END
-                    );
-                }
-            };
-
-            $view->on('beforeEndBody', $beforeEndBody->bindTo($view));
+        foreach ($bundle->js as $jsFile) {
+            $view->registerJsFile($getFileUrl($jsFile), $bundle->jsPosition);
         }
 
         return $bundle;
@@ -135,7 +114,7 @@ class AssetBundle extends Component
      */
     public function publish()
     {
-        if (!file_exists(Piko::getAlias($this->publishedBasePath) . '/' . $this->name)) {
+        if (!empty($this->sourcePath) && !file_exists(Piko::getAlias($this->publishedBasePath) . '/' . $this->name)) {
             $this->copy(
                 Piko::getAlias($this->sourcePath),
                 Piko::getAlias($this->publishedBasePath) . '/' . $this->name
