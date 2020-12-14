@@ -183,15 +183,16 @@ class DbRecord extends Model
         $valueKeys = [];
 
         if ($insert) {
-            foreach ($cols as $key) {
+            foreach ($cols as &$key) {
                 $valueKeys[] = ':' . $key;
+                $key = '`' . $key . '`';
             }
 
             $query = 'INSERT INTO `' . $this->tableName . '` (' . implode(', ', $cols) . ')';
             $query .= ' VALUES (' . implode(', ', $valueKeys) . ')';
         } else {
             foreach ($cols as $key) {
-                $valueKeys[] = $key . '= :' . $key;
+                $valueKeys[] = '`' . $key . '`' . '= :' . $key;
             }
 
             $query = 'UPDATE `' . $this->tableName . '` SET ' . implode(', ', $valueKeys);

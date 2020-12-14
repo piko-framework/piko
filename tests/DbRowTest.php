@@ -15,7 +15,8 @@ CREATE TABLE contact (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   firstname TEXT,
-  lastname TEXT
+  lastname TEXT,
+  `order` INTEGER
 )
 EOL;
         $db->exec($query);
@@ -26,6 +27,7 @@ EOL;
         $contact = new Contact();
         $contact->firstname = 'Sylvain';
         $contact->lastname = 'Philip';
+        $contact->order = 1; // order is a reserved word
 
         $contact->on('beforeSave', function($insert) use($contact) {
             $contact->name = $contact->firstname . ' ' . $contact->lastname;
@@ -93,6 +95,7 @@ class Contact extends \piko\DbRecord
         'id'        => self::TYPE_INT,
         'name'      => self::TYPE_STRING,
         'firstname' => self::TYPE_STRING,
-        'lastname'  => self::TYPE_STRING
+        'lastname'  => self::TYPE_STRING,
+        'order'     =>  self::TYPE_INT
     ];
 }
