@@ -17,6 +17,7 @@ class RouterTest extends TestCase
                 '^/portfolio/(\w+)/(\d+)' => 'portfolio/default/view|alias=$1&category=$2',
                 '^/page-1' => 'page/default/view|alias=page-1',
                 '^/page-2' => 'page/default/view|alias=page-2',
+                '^/([\w-]+)$' => 'page/default/view|alias=$1',
                 '^/admin/(\w+)/(\w+)/(\d+)' => '$1/admin/$2|id=$3',
                 '^/(\w+)/(\w+)/(\w+)' => '$1/$2/$3'
             ]
@@ -53,6 +54,10 @@ class RouterTest extends TestCase
             $this->assertEquals('page/default/view', $router->resolve());
             $this->assertEquals('page-2', $_GET['alias']);
 
+            $_SERVER['REQUEST_URI'] = $base . '/page-3';
+            $this->assertEquals('page/default/view', $router->resolve());
+            $this->assertEquals('page-3', $_GET['alias']);
+
             $_SERVER['REQUEST_URI'] = $base . '/blog/default/index';
             $this->assertEquals('blog/default/index', $router->resolve());
 
@@ -77,6 +82,7 @@ class RouterTest extends TestCase
             ));
             $this->assertEquals($base . '/page-1',  $router->getUrl('page/default/view', ['alias' => 'page-1']));
             $this->assertEquals($base . '/page-2',  $router->getUrl('page/default/view', ['alias' => 'page-2']));
+            $this->assertEquals($base . '/page-3',  $router->getUrl('page/default/view', ['alias' => 'page-3']));
             $this->assertEquals($base . '/blog/default/index', $router->getUrl('blog/default/index'));
             $this->assertEquals($base . '/blog/default/view/?id=2', $router->getUrl('blog/default/view', ['id' => 2]));
             $this->assertEquals($base . '/admin/user/edit/5', $router->getUrl('user/admin/edit', ['id' => 5]));
