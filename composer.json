@@ -7,6 +7,13 @@
 		"micro",
 		"mvc"
 	],
+	"authors" : [{
+			"name" : "Sylvain Philip",
+			"homepage" : "https://www.sphilip.com",
+			"role" : "Developer"
+		}
+	],
+	"homepage" : "https://github.com/piko-framework/piko",
 	"license" : "LGPL-3.0",
 	"require" : {
 		"php" : ">=5.6.0"
@@ -18,11 +25,11 @@
 	},
 	"require-dev" : {
 		"phpunit/phpunit" : "^6.5",
-		"squizlabs/php_codesniffer": "^3.4"
+		"squizlabs/php_codesniffer" : "^3.4"
 	},
-	"scripts": {
-		"tests": "phpunit",
-		"coding-standard": "phpcs --standard=./coding-standard  --extensions=php --ignore=./vendor .",
-		"coding-standard-fix": "phpcbf --standard=./coding-standard  --extensions=php --ignore=./vendor ."
+	"scripts" : {
+		"tests" : "phpunit",
+		"coding-standard" : "phpcs --standard=./coding-standard  --extensions=php --ignore=./vendor .",
+		"coding-standard-fix" : "phpcbf --standard=./coding-standard  --extensions=php --ignore=./vendor ."
 	}
 }
