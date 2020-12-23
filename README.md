@@ -15,7 +15,7 @@ Also, the framework offers simple ways to manipulate databases and to manage use
 ## Installation via composer
 
 ```bash
-composer require ilhooq/piko
+composer require piko/framework
 ```
 
 ## Getting started

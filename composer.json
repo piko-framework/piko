@@ -1,5 +1,5 @@
 {
-	"name" : "ilhooq/piko",
+	"name" : "piko/framework",
 	"description" : "Ultra lighweight MVC web framework",
 	"keywords" : [
 		"micro-framework",
