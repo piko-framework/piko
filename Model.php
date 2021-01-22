@@ -16,7 +16,9 @@ namespace piko;
 class Model extends Component
 {
     /**
-     * @var array Represents the model's data.
+     * Represents the model's data.
+     *
+     * @var array
      */
     protected $data = [];
 
@@ -36,6 +38,7 @@ class Model extends Component
      *
      * @param string $attribute The attribute's name.
      * @param mixed $value The attribute's value.
+     * @return void
      */
     public function __set($attribute, $value)
     {
@@ -46,15 +49,18 @@ class Model extends Component
      * Magick method to check if attribute is defined in model's data.
      *
      * @param string $attribute The attribute's name.
+     * @return boolean
      */
     public function __isset($attribute)
     {
         return isset($this->data[$attribute]);
     }
 
-    /** Magick method to unset attribute in model's data.
+    /**
+     * Magick method to unset attribute in model's data.
      *
      * @param string $attribute The attribute's name.
+     * @return void
      */
     public function __unset($attribute)
     {
@@ -67,6 +73,7 @@ class Model extends Component
      * Bind directly the model data.
      *
      * @param array $data An array of data (name-value pairs).
+     * @return void
      */
     public function bind($data)
     {

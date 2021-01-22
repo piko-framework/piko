@@ -16,12 +16,16 @@ namespace piko;
 class I18n extends Component
 {
     /**
-     * @var array A key / values pairs of domain / path
+     * A key / values pairs of domain / path
+     *
+     * @var array
      */
     public $translations = [];
 
     /**
-     * @var array Messages container by domain
+     * Messages container by domain
+     *
+     * @var array
      */
     protected $messages = [];
 
@@ -41,6 +45,7 @@ class I18n extends Component
      *
      * @param string $domain The translation domain, for instance 'app'.
      * @param string $path The path to the directory where to find translation files.
+     * @return void
      */
     public function addTranslation($domain, $path)
     {

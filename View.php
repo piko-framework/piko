@@ -15,69 +15,94 @@ namespace piko;
 class View extends Component
 {
     /**
-     * @var integer Head position.
+     * Head position.
+     *
+     * @var integer
      */
     const POS_HEAD = 1;
 
     /**
-     * @var integer End of body position.
+     * End of body position.
+     *
+     * @var integer
      */
     const POS_END = 2;
 
     /**
-     * @var array View parameters.
+     * View parameters.
+     *
+     * @var array
      */
     public $params = [];
 
     /**
-     * @var string the page title
+     * The page title
+     *
+     * @var string
      */
     public $title;
 
     /**
-     * @var array the registered CSS code blocks.
-     * @see registerCss()
+     * The registered CSS code blocks.
+     *
+     * @var array
+     * @see View::registerCss()
      */
     public $css = [];
 
     /**
-     * @var array the registered CSS files.
-     * @see registerCssFile()
+     * The registered CSS files.
+     *
+     * @var array
+     * @see View::registerCssFile()
      */
     public $cssFiles = [];
 
     /**
-     * @var array the registered JS code blocks
-     * @see registerJs()
+     * The registered JS code blocks
+     *
+     * @var array
+     * @see View::registerJs()
      */
     public $js = [];
 
     /**
-     * @var array the registered JS files.
-     * @see registerJsFile()
+     * The registered JS files.
+     *
+     * @var array
+     * @see View::registerJsFile()
      */
     public $jsFiles = [];
 
     /**
-     * @var array Directories where to find view files.
+     * Directories where to find view files.
+     *
+     * @var array
      */
     public $paths = [];
 
     /**
-     * @var array parts of the head.
+     * Parts of the head.
+     *
+     * @var array
      */
     public $head = [];
 
     /**
-     * @var array parts of the end of the body.
+     * Parts of the end of the body.
+     *
+     * @var array
      */
     public $endBody = [];
 
     /**
-     * @var array Theme map configuration. A key paired array where each key represents
+     * Theme map configuration.
+     *
+     * A key paired array where each key represents
      * a path to override and the value, the mapped path. The value could be either a string
      * or an array of path and in this case, it may be possibe to use child themes.
      * Configuration example :
+     * ```
      * ...
      * 'view' => [
      *     'class' => 'piko\View',
@@ -89,11 +114,15 @@ class View extends Component
      *         '@app/modules/admin/views' => '@app/themes/piko/admin',
      *     ],
      * ],
+     * ```
+     *
+     * @var array
      */
     public $themeMap = [];
 
     /**
      * Assemble html in the head position.
+     *
      * @return string The head html.
      */
     protected function head()
@@ -131,6 +160,7 @@ class View extends Component
 
     /**
      * Assemble html in the end of the body position.
+     *
      * @return string The end of the body html.
      */
     protected function endBody()
@@ -158,9 +188,11 @@ class View extends Component
 
     /**
      * Register a script url.
+     *
      * @param string $url The script url.
      * @param int $position The view position where to insert the script (default at the end of the body).
      * @param string $key An optional identifier
+     * @return void
      */
     public function registerJsFile($url, $position = self::POS_END, $key = null)
     {
@@ -170,7 +202,9 @@ class View extends Component
 
     /**
      * Register a stylesheet url.
+     *
      * @param string $url The stylesheet url.
+     * @return void
      */
     public function registerCSSFile($url)
     {
@@ -179,9 +213,11 @@ class View extends Component
 
     /**
      * Register a script.
+     *
      * @param string $js The script code.
      * @param int $position The view position where to insert the script (default at the end of the body).
      * @param string $key An optional identifier
+     * @return void
      */
     public function registerJs($js, $position = self::POS_END, $key = null)
     {
@@ -191,8 +227,10 @@ class View extends Component
 
     /**
      * Register css code.
+     *
      * @param string $css The css code.
      * @param string $key An optional identifier
+     * @return void
      */
     public function registerCSS($css, $key = null)
     {
@@ -202,6 +240,7 @@ class View extends Component
 
     /**
      * Escape HTML special characters.
+     *
      * @param string $string Dirty html.
      * @return string Clean html.
      */
@@ -212,6 +251,7 @@ class View extends Component
 
     /**
      * Retrieve a view file.
+     *
      * @param string $viewName The view name (without .php extension).
      * @throws \RuntimeException if view file not found.
      * @return string The path of the view file.
@@ -227,6 +267,12 @@ class View extends Component
         throw new \RuntimeException("Cannot find the view file for the viewname: $viewName");
     }
 
+    /**
+     * Try to find an override of the file in a theme.
+     *
+     * @param string $path The file path
+     * @return string The overriden or not file path
+     */
     protected function applyTheme($path)
     {
         if (!empty($this->themeMap)) {

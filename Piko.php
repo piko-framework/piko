@@ -16,22 +16,30 @@ namespace piko;
 class Piko
 {
     /**
+     * The application instance.
+     *
      * @var Application
      */
     public static $app;
 
     /**
-     * @var array The registry container.
+     * The registry container.
+     *
+     * @var array
      */
     protected static $registry = [];
 
     /**
-     * @var array The singletons container.
+     * The singletons container.
+     *
+     * @var array
      */
     protected static $singletons = [];
 
     /**
-     * @var array The aliases container.
+     * The aliases container.
+     *
+     * @var array
      */
     protected static $aliases = [];
 
@@ -58,6 +66,7 @@ class Piko
      *
      * @param string $key
      * @param mixed $value
+     * @return void
      */
     public static function set($key, $value)
     {
@@ -66,13 +75,14 @@ class Piko
 
     /**
      * Registers a path alias.
+     *
      * A path alias is a short name representing a long path (a file path, a URL, etc.)
      *
      * @param string $alias The alias name (e.g. "@web"). It must start with a '@' character.
      * @param string $path the path corresponding to the alias.
-     *
+     * @return void
      * @throws \InvalidArgumentException if $path is an invalid alias.
-     * @see getAlias()
+     * @see Piko::getAlias()
      */
     public static function setAlias($alias, $path)
     {
@@ -107,11 +117,13 @@ class Piko
 
     /**
      * Singleton factory method.
+     *
      * @param string|array $type The object type.
      * If it is a string, it should be the fully qualified name of the class.
      * If an array given, it should contain the key 'class' with the value corresponding
      * to the fully qualified name of the class
      * @param array $properties A name-value pair array corresponding to the object public properties.
+     * @return object
      */
     public static function createObject($type, $properties = [])
     {
@@ -130,8 +142,10 @@ class Piko
 
     /**
      * Configure public attributes of an object.
+     *
      * @param object $object The object instance.
      * @param array $properties A name-value pair array corresponding to the object public properties.
+     * @return void
      */
     public static function configureObject($object, $properties = [])
     {

@@ -16,33 +16,44 @@ namespace piko;
 class User extends Component
 {
     /**
-     * @var string the class name of the identity object.
+     * The class name of the identity object.
+     *
+     * @var string
      */
     public $identityClass;
 
     /**
-     * @var integer the number of seconds in which the user will be logged out automatically if he
-     * remains inactive.
+     * The number of seconds in which the user will be logged out automatically if he remains inactive.
+     *
+     * @var integer
      */
     public $authTimeout;
 
     /**
-     * @var string The access checker to use for checking access.
+     * The access checker to use for checking access.
+     *
+     * @var string
      */
     public $accessCheckerClass;
 
     /**
-     * @var IdentityInterface The identity instance.
+     * The identity instance.
+     *
+     * @var IdentityInterface
      */
     protected $identity;
 
     /**
-     * @var object Access checker instance.
+     * Access checker instance.
+     *
+     * @var object
      */
     protected $accessChecker;
 
     /**
-     * @var array internal cache of access permissions.
+     * Internal cache of access permissions.
+     *
+     * @var array
      */
     protected $access = [];
 
@@ -63,6 +74,7 @@ class User extends Component
 
     /**
      * Get user identity
+     *
      * @return IdentityInterface|null The user identity or null if no identity is found.
      */
     public function getIdentity()
@@ -81,7 +93,8 @@ class User extends Component
 
     /**
      * Get user identifier.
-     * @return NULL|string|number
+     *
+     * @return NULL|string|int
      */
     public function getId()
     {
@@ -92,7 +105,9 @@ class User extends Component
 
     /**
      * Set user identity.
+     *
      * @param IdentityInterface $identity The user identity.
+     * @return void
      * @throws \RuntimeException If identiy doesn't implement IdentityInterface.
      */
     public function setIdentity($identity)
@@ -107,7 +122,9 @@ class User extends Component
 
     /**
      * Start the session and set user identity.
+     *
      * @param IdentityInterface $identity The user identity.
+     * @return void
      */
     public function login($identity)
     {
@@ -122,6 +139,7 @@ class User extends Component
 
     /**
      * Destroy the session and remove user identity.
+     * @return void
      */
     public function logout()
     {
@@ -137,6 +155,7 @@ class User extends Component
 
     /**
      * Returns a value indicating whether the user is a guest (not authenticated).
+     *
      * @return boolean whether the current user is a guest.
      */
     public function isGuest()
@@ -146,6 +165,7 @@ class User extends Component
 
     /**
      * Check if the user can do an action.
+     *
      * @param string $permission The permission name.
      * @return boolean
      */

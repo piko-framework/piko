@@ -22,23 +22,31 @@ class DbRecord extends Model
     const TYPE_BOOL = PDO::PARAM_BOOL;
 
     /**
-     * @var Db The database instance.
+     * The database instance.
+     *
+     * @var Db
      */
     protected $db;
 
     /**
-     * @var string The name of the table.
+     * The name of the table.
+     *
+     * @var string
      */
     protected $tableName = '';
 
     /**
-     * @var array A name-value pair that describes the structure of the table.
-     * eg. ['id' => self::TYPE_INT, 'name' => 'id' => self::TYPE_STRING]
+     * A name-value pair that describes the structure of the table.
+     * eg.`['id' => self::TYPE_INT, 'name' => 'id' => self::TYPE_STRING]`
+     *
+     * @var array
      */
     protected $schema = [];
 
     /**
-     * @var string The name of the primary key. Default to 'id'.
+     * The name of the primary key. Default to 'id'.
+     *
+     * @var string
      */
     protected $primaryKey = 'id';
 
@@ -47,6 +55,8 @@ class DbRecord extends Model
      *
      * @param number $id The value of the row primary key in order to load the row imediately.
      * @param array $config An array of configuration.
+     *
+     * @return void
      */
     public function __construct($id = 0, $config = [])
     {
@@ -71,9 +81,11 @@ class DbRecord extends Model
 
     /**
      * Check if column name is defined in the table schema.
+     *
      * @param string $name
+     * @return void
      * @throws \RuntimeException
-     * @see self::$schema
+     * @see DbRecord::$schema
      */
     protected function checkColumn($name)
     {
@@ -106,7 +118,9 @@ class DbRecord extends Model
 
     /**
      * Load row data.
+     *
      * @param number $id The value of the row primary key.
+     * @return void
      * @throws \RuntimeException
      */
     public function load($id = 0)
@@ -125,6 +139,7 @@ class DbRecord extends Model
 
     /**
      * Method called before a save action.
+     *
      * @param boolean $insert If the row is a new record, the value will be true, otherwise, false.
      * @return boolean
      */
@@ -137,6 +152,7 @@ class DbRecord extends Model
 
     /**
      * Method called before a delete action.
+     *
      * @return boolean
      */
     protected function beforeDelete()
@@ -148,6 +164,8 @@ class DbRecord extends Model
 
     /**
      * Method called after a save action.
+     *
+     * @return void
      */
     protected function afterSave()
     {
@@ -156,6 +174,8 @@ class DbRecord extends Model
 
     /**
      * Method called after a delete action.
+     *
+     * @return void
      */
     protected function afterDelete()
     {
@@ -164,6 +184,7 @@ class DbRecord extends Model
 
     /**
      * Save this record into the table.
+     *
      * @throws \RuntimeException
      * @return boolean
      */
@@ -227,6 +248,7 @@ class DbRecord extends Model
 
     /**
      * Delete this record.
+     *
      * @throws \RuntimeException
      * @return boolean
      */

@@ -16,33 +16,45 @@ namespace piko;
 class Module extends Component
 {
     /**
-     * @var string The module identifier.
+     * The module identifier.
+     *
+     * @var string
      */
     public $id = '';
 
     /**
-     * @var array Mapping from controller ID to controller class.
+     * Mapping from controller ID to controller class.
+     *
+     * @var array
      */
     public $controllerMap = [];
 
     /**
-     * @var string Base name space of module's controllers.
+     * Base name space of module's controllers.
      * Default to \{baseModuleNameSpace}\\controllers
+     *
+     * @var string
      */
     public $controllerNamespace;
 
     /**
-     * @var string The layout directory of the module.
+     * The layout directory of the module.
+     *
+     * @var string
      */
     public $layoutPath;
 
     /**
-     * @var string The name of the module's layout file.
+     * The name of the module's layout file.
+     *
+     * @var string
      */
     public $layout;
 
     /**
-     * @var string the root directory of the module.
+     * The root directory of the module.
+     *
+     * @var string
      */
     private $basePath;
 
@@ -62,6 +74,7 @@ class Module extends Component
 
     /**
      * Returns the root directory of the module.
+     *
      * @return string the root directory of the module.
      */
     public function getBasePath()

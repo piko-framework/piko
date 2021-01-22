@@ -16,49 +16,65 @@ namespace piko;
 class Application extends Component
 {
     /**
-     * @var string The absolute base path of the application.
+     * The absolute base path of the application.
+     *
+     * @var string
      */
     public $basePath = '';
 
     /**
-     * @var array list of modules that should be run during the application bootstrapping process.
+     * List of modules that should be run during the application bootstrapping process.
      *
      * Each module may be specified with a module ID as specified via [[modules]].
      *
      * During the bootstrapping process, each module will be instantiated. If the module class
      * implements the bootstrap() method, this method will be also be called.
+     *
+     * @var array
      */
     public $bootstrap = [];
 
     /**
-     * @var string The charset encoding used in the application.
+     * The charset encoding used in the application.
+     *
+     * @var string
      */
     public $charset = 'UTF-8';
 
     /**
-     * @var array The configuration loaded on application instantiation.
+     * The configuration loaded on application instantiation.
+     *
+     * @var array
      */
     public $config = [];
 
     /**
-     * @var string The default layout name without file extension.
+     * The default layout name without file extension.
+     *
+     * @var string
      */
     public $defaultLayout = 'main';
 
     /**
-     * @var string The default layout path. An alias could be used.
+     * The default layout path. An alias could be used.
+     *
+     * @var string
      */
     public $defaultLayoutPath = '@app/layouts';
 
     /**
-     * @var string The Error route to display exceptions in a friendly way.
+     * The Error route to display exceptions in a friendly way.
      *
      * If not set, Exceptions catched will be thrown and stop the script execution.
+     *
+     * @var string
      */
     public $errorRoute = '';
 
     /**
-     * @var string The language that is meant to be used for end users.
+     * The language that is meant to be used for end users.
+     *
+     * @var string
      */
     public $language = 'en';
 
@@ -66,6 +82,7 @@ class Application extends Component
      * Constructor
      *
      * @param array $config The application configuration.
+     * @return void
      */
     public function __construct(array $config)
     {
@@ -105,6 +122,8 @@ class Application extends Component
 
     /**
      * Run the application.
+     *
+     * @return void
      */
     public function run()
     {
@@ -148,9 +167,11 @@ class Application extends Component
      * Dispatch a route and return the output result.
      *
      * @param string $route The route to dispatch. The route format is one of the following :
+     * ```
      * '{moduleId}/{controllerId}/{actionId}'
      * '{moduleId}/{controllerId}'
      * '{moduleId}'
+     * ```
      * @throws \RuntimeException
      * @return string The output result.
      */
@@ -194,6 +215,7 @@ class Application extends Component
      * Redirect the application to another url.
      *
      * @param string $url
+     * @return void
      */
     public function redirect($url)
     {

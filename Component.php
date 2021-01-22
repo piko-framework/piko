@@ -20,17 +20,23 @@ namespace piko;
 class Component
 {
     /**
-     * @var array Behaviors container.
+     * Behaviors container.
+     *
+     * @var array
      */
     public $behaviors = [];
 
     /**
-     * @var array Event handlers container.
+     * Event handlers container.
+     *
+     * @var array
      */
     public $events = [];
 
     /**
-     * @var array Static event handlers container.
+     * Static event handlers container.
+     *
+     * @var array
      */
     public static $events2 = [];
 
@@ -38,6 +44,7 @@ class Component
      * Constructor
      *
      * @param array $config A configuration array to set public properties of the class.
+     * @return void
      */
     public function __construct($config = [])
     {
@@ -47,6 +54,8 @@ class Component
 
     /**
      * Method called at the end of the constructor.
+     *
+     * @return void
      */
     protected function init()
     {
@@ -79,6 +88,8 @@ class Component
      *                        - A static class method ('MyClass::myMethod')
      *                        - A global function ('myFunction')
      * @param string $priority The order priority in the events stack ('after' or 'before'). Default to 'after'.
+     *
+     * @return void
      */
     public function on($eventName = '', $callback = null, $priority = 'after')
     {
@@ -103,6 +114,8 @@ class Component
      *                        - A static class method ('MyClass::myMethod')
      *                        - A global function ('myFunction')
      * @param string $priority The order priority in the events stack ('after' or 'before'). Default to 'after'.
+     *
+     * @return void
      */
     public static function when($eventName = '', $callback = null, $priority = 'after')
     {
@@ -154,6 +167,7 @@ class Component
      *                        - An object method ([$object, 'methodName'])
      *                        - A static class method ('MyClass::myMethod')
      *                        - A global function ('myFunction')
+     * @return void
      */
     public function attachBehavior($name = '', $callback = null)
     {
@@ -164,7 +178,9 @@ class Component
 
     /**
      * Detach a behavior.
+     *
      * @param string $name The behavior name.
+     * @return void
      */
     public function detachBehavior($name = '')
     {

@@ -17,6 +17,7 @@ interface IdentityInterface
 {
     /**
      * Finds an identity by the given ID.
+     *
      * @param string|int $id the ID to be looked for
      * @return IdentityInterface|null the identity object that matches the given ID.
      * null should be returned if such an identity cannot be found
@@ -25,6 +26,7 @@ interface IdentityInterface
 
     /**
      * Returns an ID that can uniquely identify a user identity.
+     *
      * @return string|int an ID that uniquely identifies a user identity.
      */
     public function getId();

@@ -10,6 +10,7 @@ namespace piko;
 
 /**
  * HttpException convert exception code to http status header.
+ *
  * @author Sylvain PHILIP <contact@sphilip.com>
  * @see \Exception
  */
@@ -17,6 +18,7 @@ class HttpException extends \Exception
 {
     /**
      * Constructor sends http header if php SAPI != cli.
+     *
      * @param string $message The exception message.
      * @param int $code The exception code (should be an HTTP status code, eg. 404)
      * @param \Throwable $previous A previous exception.

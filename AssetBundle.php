@@ -16,60 +16,78 @@ namespace piko;
 class AssetBundle extends Component
 {
     /**
-     * @var string The bundle name. (eg. jquery, bootstrap, etc.)
+     * The bundle name. (eg. jquery, bootstrap, etc.)
+     *
+     * @var string
      */
     public $name = '';
 
     /**
-     * @var string the directory that contains the source asset files for this asset bundle.
+     * The directory that contains the source asset files for this asset bundle.
      * You can use either a directory or an alias of the directory.
+     *
+     * @var string
      */
     public $sourcePath = '';
 
     /**
-     * @var array list of JavaScript files that this bundle contains.
+     * List of JavaScript files that this bundle contains.
+     *
+     * @var array
      */
     public $js = [];
 
     /**
-     * @var array list of CSS files that this bundle contains.
+     * List of CSS files that this bundle contains.
+     *
+     * @var array
      */
     public $css = [];
 
     /**
-     * @var integer Position of the js file in the generated view.
+     * Position of the js file in the generated view.
+     *
+     * @var integer
      * @see View
      */
     public $jsPosition = View::POS_END;
 
     /**
-    * @var string the root directory storing the published asset files.
+    * The root directory storing the published asset files.
+    *
+    * @var string
     */
     public $publishedBasePath = '@webroot/assets';
 
     /**
-     * @var string the base URL through which the published asset files can be accessed.
+     * The base URL through which the published asset files can be accessed.
+     *
+     * @var string
      */
     public $publishedBaseUrl = '@web/assets';
 
     /**
-     * @var array Bundle dependencies.
+     * Bundle dependencies.
+     *
+     * @var array
      */
     public $dependencies = [];
 
     /**
-     * @var AssetBundle[] list of the registered asset bundles. The keys are the bundle names, and the values
-     * are the registered [[AssetBundle]] objects.
-     * @see register()
+     * list of the registered asset bundles. The keys are the bundle names
+     * and the values are the registered AssetBundle objects.
+     *
+     * @var AssetBundle[]
+     * @see AssetBundle::register()
      */
     protected static $assetBundles = [];
 
 
     /**
      * Registers this asset bundle with a view.
-     * @param View $view the view to be registered with
      *
-     * @return static the registered asset bundle instance
+     * @param View $view the view to be registered with
+     * @return AssetBundle the registered asset bundle instance
      */
     public static function register($view)
     {
@@ -111,6 +129,8 @@ class AssetBundle extends Component
 
     /**
      * Publish assets into public path
+     *
+     * @return void
      */
     public function publish()
     {
@@ -127,6 +147,7 @@ class AssetBundle extends Component
      *
      * @param string $src The source directory to copy
      * @param string $dest The destination directory to copy
+     * @return void
      */
     protected function copy($src, $dest)
     {

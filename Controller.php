@@ -16,25 +16,34 @@ namespace piko;
 class Controller extends Component
 {
     /**
-     * @var string The controller identifier.
+     * The controller identifier.
+     *
+     * @var string
      */
     public $id = '';
 
     /**
-     * @var null|string|false The name of the layout to be applied to this controller's views.
+     * The name of the layout to be applied to this controller's views.
+     *
      * This property mainly affects the behavior of render().
      * Defaults to null, meaning the actual layout value should inherit that from module's layout value.
      * If false, no layout will be applied.
+     *
+     * @var null|string|false
      */
     public $layout;
 
     /**
-     * @var string the root directory that contains view files for this controller.
+     * The root directory that contains view files for this controller.
+     *
+     * @var string
      */
     public $viewPath;
 
     /**
-     * @var Module the module that this controller belongs to.
+     * The module that this controller belongs to.
+     *
+     * @var Module
      */
     public $module;
 
@@ -79,8 +88,10 @@ class Controller extends Component
 
     /**
      * Returns the directory containing view files for this controller.
+     *
      * The default implementation returns the directory named as controller id under the module's
      * viewPath directory.
+     *
      * @return string the directory containing the view files for this controller.
      */
     protected function getViewPath()
