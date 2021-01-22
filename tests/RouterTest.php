@@ -8,7 +8,7 @@ use piko\Router;
 
 class RouterTest extends TestCase
 {
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         $router = new Router([
             'routes' => [

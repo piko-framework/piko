@@ -8,7 +8,7 @@ use piko\User;
 
 class UserTest extends TestCase
 {
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         $user = new User([
             'identityClass' => '\\tests\UserIdentity',

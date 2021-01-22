@@ -5,7 +5,7 @@ use piko\Piko;
 
 class DbRowTest extends TestCase
 {
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         $db = new Db(['dsn' => 'sqlite::memory:']);
         Piko::set('db', $db);

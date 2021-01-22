@@ -17,7 +17,7 @@ class AssetBundleTest extends TestCase
 {
     protected $testDir = __DIR__ . '/testBundle';
 
-    protected function setUp()
+    protected function setUp(): void
     {
         mkdir($this->testDir);
         mkdir($this->testDir . '/sources');
@@ -27,7 +27,7 @@ class AssetBundleTest extends TestCase
         file_put_contents($this->testDir . '/test.php', '<?php echo $this->head(); echo $this->endBody(); ?>');
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         exec('rm -rf ' . $this->testDir);
     }
@@ -44,9 +44,9 @@ class AssetBundleTest extends TestCase
         $this->assertFileExists($this->testDir . '/public/assets/test/test.css');
         $this->assertFileExists($this->testDir . '/public/assets/test/test.js');
 
-        $this->assertRegExp('`<link href="/assets/test/test.css" rel="stylesheet">`', $output);
-        $this->assertRegExp('`<script src="/assets/test/test.js"></script>`', $output);
-        $this->assertRegExp('`<link href="http://domain.com/css/test.css" rel="stylesheet">`', $output);
-        $this->assertRegExp('`<script src="http://domain.com/js/test.js"></script>`', $output);
+        $this->assertMatchesRegularExpression('`<link href="/assets/test/test.css" rel="stylesheet">`', $output);
+        $this->assertMatchesRegularExpression('`<script src="/assets/test/test.js"></script>`', $output);
+        $this->assertMatchesRegularExpression('`<link href="http://domain.com/css/test.css" rel="stylesheet">`', $output);
+        $this->assertMatchesRegularExpression('`<script src="http://domain.com/js/test.js"></script>`', $output);
     }
 }
