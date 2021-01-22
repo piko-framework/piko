@@ -31,6 +31,6 @@
 		"tests" : "phpunit",
 		"coding-standard" : "phpcs --standard=./coding-standard  --extensions=php --ignore=./vendor .",
 		"coding-standard-fix" : "phpcbf --standard=./coding-standard  --extensions=php --ignore=./vendor .",
-		"build-doc" : "phpdoc-md"
+		"build-doc" : "phpdoc --template=phpdoc/templates/markdown"
 	}
 }

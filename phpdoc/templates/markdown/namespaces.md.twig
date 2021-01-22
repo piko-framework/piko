@@ -1,0 +1,5 @@
+{% if node.children|length > 0 %}
+{% for namespace in node.children|sort_asc %}
+{{ include('components/namespace.md.twig', {'node': namespace}) }}
+{% endfor %}
+{% endif %}

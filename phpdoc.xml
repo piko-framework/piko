@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpdocumentor configVersion="3">
+    <paths>
+        <output>build/api</output>
+        <cache>build/cache</cache>
+    </paths>
+    <version number="1.0">
+        <api>
+            <source dsn=".">
+                <path>Application.php</path>
+                <path>AssetBundle.php</path>
+                <path>Component.php</path>
+                <path>Controller.php</path>
+                <path>Db.php</path>
+                <path>DbRecord.php</path>
+                <path>HttpException.php</path>
+                <path>I18n.php</path>
+                <path>IdentityInterface.php</path>
+                <path>Model.php</path>
+                <path>Module.php</path>
+                <path>Piko.php</path>
+                <path>Router.php</path>
+                <path>User.php</path>
+                <path>Utils.php</path>
+                <path>View.php</path>
+            </source>
+        </api>
+    </version>
+    <!--<setting name="guides.enabled" value="0"></setting>-->
+</phpdocumentor>
+

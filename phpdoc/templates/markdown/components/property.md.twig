@@ -1,0 +1,6 @@
+
+<a name="property_{{ property.name }}"></a>
+### {{ property.visibility }} ${{ property.name }}{% if property.types %} : {{ property.types|join('|') }}{% endif %}{% if property.deprecated %} - (deprecated){% endif %}
+
+{{ include('components/description.md.twig', {'node': property}) }}
+{{ include('components/tags.md.twig', {'node': property}) }}

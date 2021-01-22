@@ -1,0 +1,21 @@
+{% macro refUrl(ref) %}
+
+{% endmacro %}
+
+{% set tags = node.tags|filter((v,k) => k not in ['var', 'author', 'param', 'property', 'property-read', 'property-write', 'method', 'return', 'package', 'api']) %}
+
+{% if tags|length > 0 %}
+{% for name,seriesOfTag in tags %}
+{% for tag in seriesOfTag %}
+**{{ name }}**  {% if tag.version %} {{ tag.version }}{% endif %}
+{% if tag.type %}{{ tag.type }}{% endif %}
+{% if tag.reference %}{{ tag.reference }}{% endif %}
+{% if tag.link %}
+{% if tag.description is not empty %} {{ tag.description|raw }} {% else %} {{ tag.link }} {%  endif %}
+{% endif %}
+{% if not tag.link %}
+{{ include('components/description.md.twig', {'node': tag}) }}
+{% endif %}
+{% endfor %}
+{% endfor %}
+{% endif %}

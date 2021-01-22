@@ -1,0 +1,5 @@
+<a name="constant_{{ constant.name }}"></a>
+### {{ constant.visibility }} ${{ constant.name }}{% if constant.deprecated %} - (deprecated){% endif %}
+
+{{ include('components/description.md.twig', {'node': constant}) }}
+{{ include('components/tags.md.twig', {'node': constant}) }}

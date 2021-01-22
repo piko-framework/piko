@@ -1,0 +1,42 @@
+{% macro methodType(method) %}
+{% if method.final %}final {% endif %}{% if method.static %}static {% endif %}{% if method.abstract %}abstract {% endif %}
+{% endmacro %}
+
+{% macro types(types) %}{{ types ? types|join('|') }}{% endmacro %}
+
+{% macro arguments(method) %}
+{% autoescape false %}
+{% for argument in method.arguments %}
+{{ _self.types(argument.types) }} {{ argument.isVariadic ? '...' }}{{ argument.byReference ? '&amp;' }} ${{ argument.name }}{{ argument.default ? " = #{argument.default}" }}{% if not loop.last %}, {% endif %}
+{% endfor %}
+{% endautoescape %}
+{% endmacro %}
+
+<a name="method_{{ method.name }}"></a>
+### {% if method.deprecated %}(deprecated) - {% endif %}{{ method.visibility }} {{ method.name }}(): {{ _self.types(method.response.types) }}
+
+```php
+{{ method.visibility }} {{_self.methodType(method)}} {{ method.name }}({{ _self.arguments(method)|raw }}): {{ _self.types(method.response.types) }}
+```
+
+{{ include('components/description.md.twig', {'node': method}) }}
+
+{% if method.arguments|length > 0 %}
+#### Parameters
+{% for argument in method.arguments %}
+{% autoescape false %}
+**${{ argument.name }}** {% if argument.default %} (default: {{ argument.default|raw }}){% endif %}:
+{% endautoescape %}
+{{ include('components/description.md.twig', {'node': argument}) }}
+{% endfor %}
+{% endif %}
+
+{{ include('components/tags.md.twig', {'node': method}) }}
+
+{% if (method.response.type and method.response.type != 'void') %}
+#### Return:
+**{{ _self.types(method.response.types) }}**
+{% if method.response %}
+{{ include('components/description.md.twig', {'node': method.response}) }}
+{% endif %}
+{% endif %}

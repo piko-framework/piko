@@ -1,0 +1,31 @@
+# Namespace: {{ node.fullyQualifiedStructuralElementName }}
+
+{% if node.traits|length > 0 %}
+## Traits
+
+| Name | Summary |
+| ---- | ------- |
+{% for trait in node.traits|sort_asc %}
+| [{{ trait }}]({{ trait.name }}.md) | {{ trait.summary }} |
+{% endfor %}
+{% endif %}
+
+{% if node.interfaces|length > 0 %}
+## Interfaces
+
+| Name | Summary |
+| ---- | ------- |
+{% for interface in node.interfaces|sort_asc %}
+| [{{ interface }}]({{ interface.name }}.md) | {{ interface.summary }} |
+{% endfor %}
+{% endif %}
+
+{% if node.classes|length > 0 %}
+## Classes
+
+| Name | Summary |
+| ---- | ------- |
+{% for class in node.classes|sort_asc %}
+| [{{ class }}]({{ class.name }}.md) | {{ class.summary }} |
+{% endfor %}
+{% endif %}

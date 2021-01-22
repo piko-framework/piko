@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+  <name>markdown</name>
+  <author>Sylvain PHILIP</author>
+  <email>contact@sphilip.com</email>
+  <version>1.0.0</version>
+  <transformations>
+    <transformation writer="twig" query="indexes.namespaces" source="templates/markdown/namespaces.md.twig" artifact="README.md" />
+    <transformation writer="twig" query="indexes.classes" source="templates/markdown/class.md.twig" artifact="{{name}}.md" />
+    <transformation writer="twig" query="indexes.interfaces" source="templates/markdown/interface.md.twig" artifact="{{name}}.md" />
+    <transformation writer="twig" query="indexes.traits" source="templates/markdown/class.md.twig" artifact="{{name}}.md" />
+  </transformations>
+  <parameters>
+    <parameter key="twig-debug">true</parameter>
+  </parameters>
+</template>
