@@ -29,6 +29,13 @@ class View extends Component
     const POS_END = 2;
 
     /**
+     * View filename extension
+     *
+     * @var string
+     */
+    public $extension = 'php';
+
+    /**
      * View parameters.
      *
      * @var array
@@ -252,15 +259,15 @@ class View extends Component
     /**
      * Retrieve a view file.
      *
-     * @param string $viewName The view name (without .php extension).
+     * @param string $viewName The view name (without extension).
      * @throws \RuntimeException if view file not found.
      * @return string The path of the view file.
      */
     protected function findFile($viewName)
     {
         foreach ($this->paths as $path) {
-            if (file_exists(Piko::getAlias($path) . '/' . $viewName . '.php')) {
-                return Piko::getAlias($path) . '/' . $viewName . '.php';
+            if (file_exists(Piko::getAlias($path) . '/' . $viewName . '.' . $this->extension)) {
+                return Piko::getAlias($path) . '/' . $viewName . '.' . $this->extension;
             }
         }
 
