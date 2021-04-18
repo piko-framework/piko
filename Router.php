@@ -160,6 +160,8 @@ class Router extends Component
             }
         }
 
+        $this->trigger('afterBuildUri', [&$uri]);
+
         return Piko::getAlias('@web') . $uri;
     }
 }
