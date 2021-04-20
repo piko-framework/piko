@@ -81,6 +81,16 @@ class Model extends Component
     }
 
     /**
+     * Get the model data as an associative array.
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        return $this->data;
+    }
+
+    /**
      * Validate this model (Should be extended)
      *
      * @return boolean
