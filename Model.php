@@ -77,7 +77,11 @@ class Model extends Component
      */
     public function bind($data)
     {
-        $this->data = array_merge($this->data, $data);
+        foreach ($data as $key => $value) {
+            if (isset($this->data[$key])) {
+                $this->data[$key] = $value;
+            }
+        }
     }
 
     /**
