@@ -78,7 +78,7 @@ class Model extends Component
     public function bind($data)
     {
         foreach ($data as $key => $value) {
-            if (isset($this->data[$key])) {
+            if (array_key_exists($key, $this->data)) {
                 $this->data[$key] = $value;
             }
         }
