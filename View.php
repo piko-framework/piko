@@ -327,9 +327,15 @@ class View extends Component
         extract($model, EXTR_OVERWRITE);
 
         ob_start();
-        require $file;
-        $output = ob_get_contents();
-        ob_end_clean();
+
+        try {
+            require $file;
+            $output = ob_get_contents();
+        } catch (\Exception $e) {
+            throw $e;
+        } finally {
+            ob_end_clean();
+        }
 
         $this->trigger('afterRender', [
             $output,
