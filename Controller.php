@@ -79,8 +79,7 @@ class Controller extends Component
      */
     public function render($viewName, $data = [])
     {
-        /* @var $view View */
-        $view = Piko::get('view');
+        $view = Piko::$app->getView();
         $view->paths[] = $this->getViewPath();
 
         return $view->render($viewName, $data);

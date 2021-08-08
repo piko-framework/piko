@@ -137,7 +137,7 @@ class Application extends Component
 
         $this->trigger('beforeRoute');
 
-        $router = Piko::get('router');
+        $router = $this->getRouter();
 
         $route = $router->resolve();
 
@@ -184,23 +184,16 @@ class Application extends Component
         }
 
         $moduleId = $parts[0];
-
-        if (!isset($this->config['modules'][$moduleId])) {
-            throw new \RuntimeException("Configuration not found for module {$moduleId}.");
-        }
-
         $controllerId = isset($parts[1])? $parts[1] : null;
         $actionId = isset($parts[2])? $parts[2] : null;
-
-        $module = Piko::createObject($this->config['modules'][$moduleId]);
+        $module = $this->getModule($moduleId);
         $module->id = $moduleId;
-
         $this->trigger('beforeRender', [&$module, $controllerId, $actionId]);
         $output = $module->run($controllerId, $actionId);
 
         if ($module->layout !== false) {
             $layout = $module->layout == null ? $this->defaultLayout : $module->layout;
-            $view = Piko::get('view');
+            $view = $this->getView();
             $path = empty($module->layoutPath)? $this->defaultLayoutPath : $module->layoutPath;
             $view->paths[] = $path;
             $output = $view->render($layout, ['content' => $output]);
@@ -209,6 +202,43 @@ class Application extends Component
         $this->trigger('afterRender', [&$module, &$output]);
 
         return $output;
+    }
+
+    /**
+     * Get the application router instance
+     *
+     * @return Router instance
+     */
+    public function getRouter()
+    {
+        return Piko::get('router');
+    }
+
+    /**
+     * Get the application view instance
+     *
+     * @return View instance
+     */
+    public function getView()
+    {
+        return Piko::get('view');
+    }
+
+    /**
+     * Get a module instance
+     *
+     * @param string $moduleId The module identifier
+     * @throws \RuntimeException
+     *
+     * @return Module instance
+     */
+    public function getModule($moduleId)
+    {
+        if (!isset($this->config['modules'][$moduleId])) {
+            throw new \RuntimeException("Configuration not found for module {$moduleId}.");
+        }
+
+        return Piko::createObject($this->config['modules'][$moduleId]);
     }
 
     /**
