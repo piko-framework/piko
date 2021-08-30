@@ -79,7 +79,7 @@ abstract class Controller extends Component
      * @param array $data An array of data (name-value pairs) to transmit to the view.
      * @return string|null The view output.
      */
-    public function render(string $viewName, array $data = []): ?string
+    protected function render(string $viewName, array $data = []): ?string
     {
         $view = Piko::$app->getView();
         $view->paths[] = $this->getViewPath();
