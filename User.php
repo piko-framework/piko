@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace piko;
 
+use RuntimeException;
+
 /**
  * Application User base class.
  *
@@ -110,12 +112,12 @@ class User extends Component
      *
      * @param IdentityInterface $identity The user identity.
      * @return void
-     * @throws \RuntimeException If identiy doesn't implement IdentityInterface.
+     * @throws RuntimeException If identiy doesn't implement IdentityInterface.
      */
     public function setIdentity(IdentityInterface $identity): void
     {
         if (!$identity instanceof IdentityInterface) {
-            throw new \RuntimeException('The identity instance must implement IdentityInterface');
+            throw new RuntimeException('The identity instance of IdentityInterface');
         }
 
         $this->identity = $identity;

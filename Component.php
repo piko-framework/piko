@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace piko;
 
+use RuntimeException;
+
 /**
  * Component class implements events and behaviors features.
  * Also component public properties can be initialized with an array of configuration during instantiation.
@@ -68,7 +70,7 @@ abstract class Component
      *
      * @param string $name The name of the behavior.
      * @param array $args The behavior arguments.
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return mixed
      */
     public function __call(string $name, array $args)
@@ -77,7 +79,7 @@ abstract class Component
             return call_user_func_array($this->behaviors[$name], $args);
         }
 
-        throw new \RuntimeException("Behavior $name not registered.");
+        throw new RuntimeException("Behavior $name not registered.");
     }
 
     /**

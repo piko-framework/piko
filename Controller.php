@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 namespace piko;
 
-use ErrorException;
+use RuntimeException;
 
 /**
  * Controller is the base class for classes containing controller logic.
@@ -56,7 +56,7 @@ abstract class Controller extends Component
 
      * @param string $id the ID of the action to be executed.
      * @return mixed the result of the action.
-     * @throws ErrorException if the requested action ID cannot be resolved into an action successfully.
+     * @throws RuntimeException if the requested action ID cannot be resolved into an action successfully.
      */
     public function runAction(string $id)
     {
@@ -65,7 +65,7 @@ abstract class Controller extends Component
         $methodName = $id . 'Action';
 
         if (!method_exists($this, $methodName)) {
-            throw new ErrorException("Method \"$methodName\" not found in " . get_called_class());
+            throw new RuntimeException("Method \"$methodName\" not found in " . get_called_class());
         }
 
         $output = $this->$methodName();
@@ -114,7 +114,7 @@ abstract class Controller extends Component
      *
      * @param string $route The route to convert
      * @param array $params The route params
-     * @throws ErrorException if router is not instance of piko\Router
+     * @throws RuntimeException if router is not instance of piko\Router
      * @return string
      * @see Router::getUrl
      */
@@ -126,7 +126,7 @@ abstract class Controller extends Component
             return $router->getUrl($route, $params);
         }
 
-        throw new ErrorException('Router must be instance of piko\Router');
+        throw new RuntimeException('Router must be instance of piko\Router');
     }
 
     /**

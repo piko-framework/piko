@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace piko;
 
+use RuntimeException;
+
 /**
  * The Web application class
  *
@@ -177,7 +179,7 @@ class Application extends Component
      * '{moduleId}/{controllerId}'
      * '{moduleId}'
      * ```
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return string The output result.
      */
     public function dispatch($route)
@@ -185,7 +187,7 @@ class Application extends Component
         $parts = explode('/', trim($route, '/'));
 
         if (!isset($parts[0])) {
-            throw new \RuntimeException("Module not found in the route $route.");
+            throw new RuntimeException("Module not found in the route $route.");
         }
 
         $moduleId = $parts[0];
@@ -234,7 +236,7 @@ class Application extends Component
      *
      * @return User instance
      */
-    public function getUser():? User
+    public function getUser(): ?User
     {
         return Piko::get('view');
     }
@@ -243,14 +245,14 @@ class Application extends Component
      * Get a module instance
      *
      * @param string $moduleId The module identifier
-     * @throws \RuntimeException
+     * @throws RuntimeException
      *
      * @return Module instance
      */
     public function getModule($moduleId)
     {
         if (!isset($this->config['modules'][$moduleId])) {
-            throw new \RuntimeException("Configuration not found for module {$moduleId}.");
+            throw new RuntimeException("Configuration not found for module {$moduleId}.");
         }
 
         return Piko::createObject($this->config['modules'][$moduleId]);

@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace piko;
 
+use RuntimeException;
+
 /**
  * Miscellaneous utils.
  *
@@ -35,7 +37,7 @@ class Utils
         $handle = fopen($file, 'r');
 
         if (!$handle) {
-            throw new \RuntimeException("Can't open file $file");
+            throw new RuntimeException("Can't open file $file");
         }
 
         while (($line = fgets($handle)) !== false) {

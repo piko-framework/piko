@@ -7,8 +7,10 @@
  * @link https://github.com/ilhooq/piko
  */
 declare(strict_types=1);
- 
+
 namespace piko;
+
+use InvalidArgumentException;
 
 /**
  * Piko is the helper class for the Piko framework.
@@ -83,13 +85,13 @@ class Piko
      * @param string $alias The alias name (e.g. "@web"). It must start with a '@' character.
      * @param string $path the path corresponding to the alias.
      * @return void
-     * @throws \InvalidArgumentException if $path is an invalid alias.
+     * @throws InvalidArgumentException if $path is an invalid alias.
      * @see Piko::getAlias()
      */
     public static function setAlias(string $alias, string $path): void
     {
         if ($alias{0} != '@') {
-            throw new \InvalidArgumentException('Alias must start with the @ character');
+            throw new InvalidArgumentException('Alias must start with the @ character');
         }
 
         static::$aliases[$alias] = $path;

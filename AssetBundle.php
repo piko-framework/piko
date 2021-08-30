@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace piko;
 
+use RuntimeException;
+
 /**
  * AssetBundle represents a collection of CSS files and JS files to publish inside the public path.
  *
@@ -154,7 +156,7 @@ abstract class AssetBundle extends Component
     protected function copy($src, $dest)
     {
         if (!file_exists($src)) {
-            throw new \RuntimeException("Src: $src does not exists.");
+            throw new RuntimeException("Src: $src does not exists.");
         }
 
         $dir = opendir($src);

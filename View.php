@@ -10,7 +10,8 @@ declare(strict_types=1);
 
 namespace piko;
 
-use ErrorException;
+use RuntimeException;
+use Exception;
 
 /**
  * Base application view.
@@ -265,7 +266,7 @@ class View extends Component
      *
      * @param string $route The route to convert
      * @param array $params The route params
-     * @throws ErrorException if router is not instance of piko\Router
+     * @throws RuntimeException if router is not instance of piko\Router
      * @return string
      * @see Router::getUrl
      */
@@ -277,14 +278,14 @@ class View extends Component
             return $router->getUrl($route, $params);
         }
 
-        throw new ErrorException('Router must be instance of piko\Router');
+        throw new RuntimeException('Router must be instance of piko\Router');
     }
 
     /**
      * Retrieve a view file.
      *
      * @param string $viewName The view name (without extension).
-     * @throws \RuntimeException if view file not found.
+     * @throws RuntimeException if view file not found.
      * @return string The path of the view file.
      */
     protected function findFile(string $viewName): string
@@ -295,7 +296,7 @@ class View extends Component
             }
         }
 
-        throw new \RuntimeException("Cannot find the view file for the viewname: $viewName");
+        throw new RuntimeException("Cannot find the view file for the viewname: $viewName");
     }
 
     /**
@@ -355,7 +356,7 @@ class View extends Component
         try {
             require $file;
             $output = ob_get_contents();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw $e;
         } finally {
             ob_end_clean();

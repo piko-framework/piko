@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace piko;
 
 use PDO;
+use RuntimeException;
 
 /**
  * DbRecord reprensents a database table row.
@@ -65,11 +66,11 @@ abstract class DbRecord extends Model
         $db = Piko::get('db');
 
         if ($db === null) {
-            throw \RuntimeException("No db instance found. You must set a db instance with Piko::set('db', \$db).");
+            throw RuntimeException("No db instance found. You must set a db instance with Piko::set('db', \$db).");
         }
 
         if (!$db instanceof PDO) {
-            throw \RuntimeException('Db must be instance of \PDO.');
+            throw RuntimeException('Db must be instance of \PDO.');
         }
 
         $this->db = $db;
@@ -86,13 +87,13 @@ abstract class DbRecord extends Model
      *
      * @param string $name
      * @return void
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @see DbRecord::$schema
      */
     protected function checkColumn($name)
     {
         if (!isset($this->schema[$name])) {
-            throw new \RuntimeException("$name is not in the table schema.");
+            throw new RuntimeException("$name is not in the table schema.");
         }
     }
 
@@ -123,7 +124,7 @@ abstract class DbRecord extends Model
      *
      * @param number $id The value of the row primary key.
      * @return void
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function load($id = 0)
     {
@@ -133,7 +134,7 @@ abstract class DbRecord extends Model
         $data = $st->fetch(PDO::FETCH_ASSOC);
 
         if (!$data) {
-            throw new \RuntimeException("Error while trying to load item {$id}");
+            throw new RuntimeException("Error while trying to load item {$id}");
         }
 
         $this->data = $data;
@@ -195,7 +196,7 @@ abstract class DbRecord extends Model
     /**
      * Save this record into the table.
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return boolean
      */
     public function save()
@@ -235,7 +236,7 @@ abstract class DbRecord extends Model
         if ($st === false) {
             $error = $this->db->errorInfo();
 
-            throw new \RuntimeException("Query '$query' failed with error {$error[0]} : {$error[2]}");
+            throw new RuntimeException("Query '$query' failed with error {$error[0]} : {$error[2]}");
         }
 
         foreach ($this->data as $key => $value) {
@@ -244,7 +245,7 @@ abstract class DbRecord extends Model
 
         if ($st->execute() === false) {
             $error = $st->errorInfo();
-            throw new \RuntimeException("Query failed with error {$error[0]} : {$error[2]}");
+            throw new RuntimeException("Query failed with error {$error[0]} : {$error[2]}");
         }
 
         if ($insert) {
@@ -259,13 +260,13 @@ abstract class DbRecord extends Model
     /**
      * Delete this record.
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return boolean
      */
     public function delete(): bool
     {
         if (!isset($this->data[$this->primaryKey])) {
-            throw new \RuntimeException("Can't delete because item is not loaded.");
+            throw new RuntimeException("Can't delete because item is not loaded.");
         }
 
         if (!$this->beforeDelete()) {
@@ -276,7 +277,7 @@ abstract class DbRecord extends Model
         $st->bindParam(1, $this->data[$this->primaryKey], PDO::PARAM_INT);
 
         if (!$st->execute()) {
-            throw new \RuntimeException("Error while trying to delete item {$this->data[$this->primaryKey]}");
+            throw new RuntimeException("Error while trying to delete item {$this->data[$this->primaryKey]}");
         }
 
         $this->afterDelete();
