@@ -15,7 +15,7 @@ namespace piko;
  *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
-class AssetBundle extends Component
+abstract class AssetBundle extends Component
 {
     /**
      * The bundle name. (eg. jquery, bootstrap, etc.)

@@ -17,7 +17,7 @@ use ReflectionClass;
  *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
-class Module extends Component
+abstract class Module extends Component
 {
     /**
      * The module identifier.
