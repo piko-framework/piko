@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace piko;
 
+use ErrorException;
+
 /**
  * Controller is the base class for classes containing controller logic.
  *
@@ -54,7 +56,7 @@ abstract class Controller extends Component
 
      * @param string $id the ID of the action to be executed.
      * @return mixed the result of the action.
-     * @throws \RuntimeException if the requested action ID cannot be resolved into an action successfully.
+     * @throws ErrorException if the requested action ID cannot be resolved into an action successfully.
      */
     public function runAction(string $id)
     {
@@ -63,7 +65,7 @@ abstract class Controller extends Component
         $methodName = $id . 'Action';
 
         if (!method_exists($this, $methodName)) {
-            throw new \RuntimeException("Method \"$methodName\" not found in " . get_called_class());
+            throw new ErrorException("Method \"$methodName\" not found in " . get_called_class());
         }
 
         $output = $this->$methodName();
@@ -85,6 +87,46 @@ abstract class Controller extends Component
         $view->paths[] = $this->getViewPath();
 
         return $view->render($viewName, $data);
+    }
+
+    /**
+     * Proxy to Application::redirect
+     *
+     * @param string $url The url to redirect
+     */
+    protected function redirect(string $url): void
+    {
+        Piko::$app->redirect($url);
+    }
+
+    /**
+     * Proxy to Application::dispatch
+     *
+     * @param string $route The route to forward
+     */
+    protected function forward(string $route): string
+    {
+        return Piko::$app->dispatch($route);
+    }
+
+    /**
+     * Convenient method to convert a route to an url
+     *
+     * @param string $route The route to convert
+     * @param array $params The route params
+     * @throws ErrorException if router is not instance of piko\Router
+     * @return string
+     * @see Router::getUrl
+     */
+    protected function getUrl(string $route, array $params = []): string
+    {
+        $router = Piko::get('router');
+
+        if ($router instanceof Router) {
+            return $router->getUrl($route, $params);
+        }
+
+        throw new ErrorException('Router must be instance of piko\Router');
     }
 
     /**
