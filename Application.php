@@ -103,6 +103,7 @@ class Application extends Component
 
         if (isset($config['components'])) {
             foreach ($config['components'] as $name => $definition) {
+                // Lasy-loading of component instances
                 Piko::set($name, function () use ($definition) {
                     return Piko::createObject($definition);
                 });
@@ -118,6 +119,8 @@ class Application extends Component
         $this->config = $config;
 
         Piko::$app = $this;
+
+        $this->trigger('init');
     }
 
     /**
