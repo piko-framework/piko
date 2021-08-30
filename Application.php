@@ -214,7 +214,7 @@ class Application extends Component
      *
      * @return Router instance
      */
-    public function getRouter()
+    public function getRouter(): Router
     {
         return Piko::get('router');
     }
@@ -224,7 +224,7 @@ class Application extends Component
      *
      * @return View instance
      */
-    public function getView()
+    public function getView(): View
     {
         return Piko::get('view');
     }
