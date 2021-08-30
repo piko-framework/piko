@@ -1,5 +1,10 @@
 <?php
 use PHPUnit\Framework\TestCase;
+use piko\Component;
+
+class TestComponent extends Component
+{
+}
 
 class ComponentTest extends TestCase
 {
@@ -15,7 +20,7 @@ class ComponentTest extends TestCase
 
     public function testEvents()
     {
-        $component = new \piko\Component;
+        $component = new TestComponent();
 
         // Test registering a Closure
         $component->on('test', function ($a, $b, $c) {
@@ -56,7 +61,7 @@ class ComponentTest extends TestCase
 
     public function testBehavior()
     {
-        $component = new \piko\Component;
+        $component = new TestComponent;
 
         $component->attachBehavior('sum', function ($a, $b) {
             return $a + $b;

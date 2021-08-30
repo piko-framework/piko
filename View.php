@@ -6,6 +6,8 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/ilhooq/piko
  */
+declare(strict_types=1);
+
 namespace piko;
 
 /**
@@ -132,7 +134,7 @@ class View extends Component
      *
      * @return string The head html.
      */
-    protected function head()
+    protected function head(): string
     {
         $this->trigger('beforeHead');
 
@@ -170,7 +172,7 @@ class View extends Component
      *
      * @return string The end of the body html.
      */
-    protected function endBody()
+    protected function endBody(): string
     {
         $this->trigger('beforeEndBody');
 
@@ -201,7 +203,7 @@ class View extends Component
      * @param string $key An optional identifier
      * @return void
      */
-    public function registerJsFile($url, $position = self::POS_END, $key = null)
+    public function registerJsFile(string $url, int $position = self::POS_END, string $key = null): void
     {
         $key = $key ?: md5($url);
         $this->jsFiles[$position][$key] = $url;
@@ -213,7 +215,7 @@ class View extends Component
      * @param string $url The stylesheet url.
      * @return void
      */
-    public function registerCSSFile($url)
+    public function registerCSSFile(string $url): void
     {
         $this->cssFiles[] = $url;
     }
@@ -226,7 +228,7 @@ class View extends Component
      * @param string $key An optional identifier
      * @return void
      */
-    public function registerJs($js, $position = self::POS_END, $key = null)
+    public function registerJs(string $js, int $position = self::POS_END, string $key = null): void
     {
         $key = $key ?: md5($js);
         $this->js[$position][$key] = $js;
@@ -239,7 +241,7 @@ class View extends Component
      * @param string $key An optional identifier
      * @return void
      */
-    public function registerCSS($css, $key = null)
+    public function registerCSS(string $css, string $key = null): void
     {
         $key = $key ?: md5($css);
         $this->css[$key] = $css;
@@ -251,7 +253,7 @@ class View extends Component
      * @param string $string Dirty html.
      * @return string Clean html.
      */
-    public function escape($string)
+    public function escape(string $string): string
     {
         return htmlentities($string, ENT_COMPAT | ENT_HTML5, Piko::$app->charset);
     }
@@ -263,7 +265,7 @@ class View extends Component
      * @throws \RuntimeException if view file not found.
      * @return string The path of the view file.
      */
-    protected function findFile($viewName)
+    protected function findFile(string $viewName): string
     {
         foreach ($this->paths as $path) {
             if (file_exists(Piko::getAlias($path) . '/' . $viewName . '.' . $this->extension)) {
@@ -280,7 +282,7 @@ class View extends Component
      * @param string $path The file path
      * @return string The overriden or not file path
      */
-    protected function applyTheme($path)
+    protected function applyTheme(string $path): string
     {
         if (!empty($this->themeMap)) {
 
@@ -311,7 +313,7 @@ class View extends Component
      * @param array $data An array of data (name-value pairs) to transmit to the view file.
      * @return string The view output.
      */
-    public function render($file, $model = [])
+    public function render(string $file, array $model = []): string
     {
         if (!file_exists($file)) {
             $file = $this->findFile($file);

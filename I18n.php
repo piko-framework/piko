@@ -6,6 +6,8 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/ilhooq/piko
  */
+declare(strict_types=1);
+
 namespace piko;
 
 /**
@@ -33,7 +35,7 @@ class I18n extends Component
      * {@inheritDoc}
      * @see \piko\Component::init()
      */
-    protected function init()
+    protected function init(): void
     {
         foreach ($this->translations as $domain => $path) {
             $this->addTranslation($domain, $path);
@@ -47,7 +49,7 @@ class I18n extends Component
      * @param string $path The path to the directory where to find translation files.
      * @return void
      */
-    public function addTranslation($domain, $path)
+    public function addTranslation(string $domain, string $path): void
     {
         $this->trigger('addTranslation', [$domain, $path]);
         $this->messages[$domain] = require Piko::getAlias($path) . '/' . Piko::$app->language . '.php';
@@ -62,7 +64,7 @@ class I18n extends Component
      *
      * @return string The translated text or the text itself if no translation was found.
      */
-    public function translate($domain, $text, $params = [])
+    public function translate(string $domain, string $text, array $params = []): string
     {
         $text = isset($this->messages[$domain][$text]) ? $this->messages[$domain][$text] : $text;
 

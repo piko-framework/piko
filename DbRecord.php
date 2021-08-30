@@ -6,6 +6,8 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/ilhooq/piko
  */
+declare(strict_types=1);
+
 namespace piko;
 
 use PDO;
@@ -15,7 +17,7 @@ use PDO;
  *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
-class DbRecord extends Model
+abstract class DbRecord extends Model
 {
     const TYPE_INT = PDO::PARAM_INT;
     const TYPE_STRING = PDO::PARAM_STR;
@@ -143,9 +145,13 @@ class DbRecord extends Model
      * @param boolean $insert If the row is a new record, the value will be true, otherwise, false.
      * @return boolean
      */
-    protected function beforeSave($insert)
+    protected function beforeSave($insert): bool
     {
-        $this->trigger('beforeSave', [$insert]);
+        $return = $this->trigger('beforeSave', [$insert]);
+
+        if (is_bool($return)) {
+            return $return;
+        }
 
         return true;
     }
@@ -155,9 +161,13 @@ class DbRecord extends Model
      *
      * @return boolean
      */
-    protected function beforeDelete()
+    protected function beforeDelete(): bool
     {
-        $this->trigger('beforeDelete');
+        $return = $this->trigger('beforeDelete');
+
+        if (is_bool($return)) {
+            return $return;
+        }
 
         return true;
     }
@@ -167,7 +177,7 @@ class DbRecord extends Model
      *
      * @return void
      */
-    protected function afterSave()
+    protected function afterSave(): void
     {
         $this->trigger('afterSave');
     }
@@ -177,7 +187,7 @@ class DbRecord extends Model
      *
      * @return void
      */
-    protected function afterDelete()
+    protected function afterDelete(): void
     {
         $this->trigger('afterDelete');
     }
@@ -252,7 +262,7 @@ class DbRecord extends Model
      * @throws \RuntimeException
      * @return boolean
      */
-    public function delete()
+    public function delete(): bool
     {
         if (!isset($this->data[$this->primaryKey])) {
             throw new \RuntimeException("Can't delete because item is not loaded.");

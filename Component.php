@@ -6,6 +6,8 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/ilhooq/piko
  */
+declare(strict_types=1);
+
 namespace piko;
 
 /**
@@ -17,26 +19,26 @@ namespace piko;
  *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
-class Component
+abstract class Component
 {
     /**
      * Behaviors container.
      *
-     * @var array
+     * @var callable[]
      */
     public $behaviors = [];
 
     /**
      * Event handlers container.
      *
-     * @var array
+     * @var callable[]
      */
     public $events = [];
 
     /**
      * Static event handlers container.
      *
-     * @var array
+     * @var callable[]
      */
     public static $events2 = [];
 
@@ -46,7 +48,7 @@ class Component
      * @param array $config A configuration array to set public properties of the class.
      * @return void
      */
-    public function __construct($config = [])
+    public function __construct(array $config = [])
     {
         Piko::configureObject($this, $config);
         $this->init();
@@ -57,7 +59,7 @@ class Component
      *
      * @return void
      */
-    protected function init()
+    protected function init(): void
     {
     }
 
@@ -69,7 +71,7 @@ class Component
      * @throws \RuntimeException
      * @return mixed
      */
-    public function __call($name, $args)
+    public function __call(string $name, array $args)
     {
         if (isset($this->behaviors[$name])) {
             return call_user_func_array($this->behaviors[$name], $args);
@@ -91,7 +93,7 @@ class Component
      *
      * @return void
      */
-    public function on($eventName = '', $callback = null, $priority = 'after')
+    public function on(string $eventName, callable $callback, string $priority = 'after'): void
     {
         if (! isset($this->events[$eventName])) {
             $this->events[$eventName] = [];
@@ -117,7 +119,7 @@ class Component
      *
      * @return void
      */
-    public static function when($eventName = '', $callback = null, $priority = 'after')
+    public static function when(string $eventName, callable $callback, string $priority = 'after'): void
     {
         if (! isset(static::$events2[$eventName])) {
             static::$events2[$eventName] = [];
@@ -139,7 +141,7 @@ class Component
      * @param array $args The event handlers arguments.
      * @return mixed[]
      */
-    public function trigger($eventName = '', $args = array())
+    public function trigger(string $eventName, array $args = [])
     {
         $return = [];
 
@@ -162,14 +164,14 @@ class Component
      * Attach a behavior to the component instance.
      *
      * @param string $name The behavior name.
-     * @param mixed $callback The behavior implementation. Must be  one of the following:
+     * @param callable $callback The behavior implementation. Must be  one of the following:
      *                        - A Closure (function(){ ... })
      *                        - An object method ([$object, 'methodName'])
      *                        - A static class method ('MyClass::myMethod')
      *                        - A global function ('myFunction')
      * @return void
      */
-    public function attachBehavior($name = '', $callback = null)
+    public function attachBehavior(string $name, callable $callback): void
     {
         if (!isset($this->behaviors[$name])) {
             $this->behaviors[$name] = $callback;
@@ -182,7 +184,7 @@ class Component
      * @param string $name The behavior name.
      * @return void
      */
-    public function detachBehavior($name = '')
+    public function detachBehavior(string $name): void
     {
         if (isset($this->behaviors[$name])) {
             unset($this->behaviors[$name]);

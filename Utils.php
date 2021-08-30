@@ -6,6 +6,8 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/ilhooq/piko
  */
+declare(strict_types=1);
+
 namespace piko;
 
 /**
@@ -28,7 +30,7 @@ class Utils
      * @return void
      * @throws \RuntimeException If file not found.
      */
-    public static function parseEnvFile($file)
+    public static function parseEnvFile(string $file): void
     {
         $handle = fopen($file, 'r');
 

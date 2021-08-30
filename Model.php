@@ -6,6 +6,8 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/ilhooq/piko
  */
+declare(strict_types=1);
+
 namespace piko;
 
 /**
@@ -13,7 +15,7 @@ namespace piko;
  *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
-class Model extends Component
+abstract class Model extends Component
 {
     /**
      * Represents the model's data.
@@ -75,7 +77,7 @@ class Model extends Component
      * @param array $data An array of data (name-value pairs).
      * @return void
      */
-    public function bind($data)
+    public function bind(array $data): void
     {
         foreach ($data as $key => $value) {
             if (array_key_exists($key, $this->data)) {
@@ -89,7 +91,7 @@ class Model extends Component
      *
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
         return $this->data;
     }
@@ -99,7 +101,7 @@ class Model extends Component
      *
      * @return boolean
      */
-    public function validate()
+    public function validate(): bool
     {
         return true;
     }

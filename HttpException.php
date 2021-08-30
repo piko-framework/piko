@@ -6,7 +6,12 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/ilhooq/piko
  */
+declare(strict_types=1);
+
 namespace piko;
+
+use Exception;
+use Throwable;
 
 /**
  * HttpException convert exception code to http status header.
@@ -14,16 +19,16 @@ namespace piko;
  * @author Sylvain PHILIP <contact@sphilip.com>
  * @see \Exception
  */
-class HttpException extends \Exception
+class HttpException extends Exception
 {
     /**
      * Constructor sends http header if php SAPI != cli.
      *
      * @param string $message The exception message.
      * @param int $code The exception code (should be an HTTP status code, eg. 404)
-     * @param \Throwable $previous A previous exception.
+     * @param Throwable $previous A previous exception.
      */
-    public function __construct($message = null, $code = null, $previous = null)
+    public function __construct(string $message = null, int $code = null, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
 

@@ -6,21 +6,25 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/ilhooq/piko
  */
+declare(strict_types=1);
+
 namespace piko;
+
+use PDO;
 
 /**
  * Db is the base class to access SQL databases. It's just a proxy to \PDO.
  *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
-class Db extends \PDO
+class Db extends PDO
 {
     /**
-     * Extends \PDO constructor to accept an array of configuration.
+     * Extends PDO constructor to accept an array of configuration.
      *
      * @param array $config An array (name-value pairs) containing
      * dsn, username, password and options of the database.
-     * @see \PDO::__construct()
+     * @see PDO::__construct()
      */
     public function __construct($config = [])
     {

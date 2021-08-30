@@ -6,6 +6,8 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/ilhooq/piko
  */
+declare(strict_types=1);
+ 
 namespace piko;
 
 /**
@@ -50,7 +52,7 @@ class Piko
      * @param mixed $default Default value if data is not found from the registry.
      * @return mixed
      */
-    public static function get($key, $default = null)
+    public static function get(string $key, $default = null)
     {
         $data = isset(static::$registry[$key])? static::$registry[$key] : $default;
 
@@ -68,7 +70,7 @@ class Piko
      * @param mixed $value
      * @return void
      */
-    public static function set($key, $value)
+    public static function set(string $key, $value): void
     {
         static::$registry[$key] = $value;
     }
@@ -84,7 +86,7 @@ class Piko
      * @throws \InvalidArgumentException if $path is an invalid alias.
      * @see Piko::getAlias()
      */
-    public static function setAlias($alias, $path)
+    public static function setAlias(string $alias, string $path): void
     {
         if ($alias{0} != '@') {
             throw new \InvalidArgumentException('Alias must start with the @ character');
@@ -99,7 +101,7 @@ class Piko
      * @param string $alias The alias to be translated.
      * @return string|bool The path corresponding to the alias. False if the alias is not registered.
      */
-    public static function getAlias($alias)
+    public static function getAlias(string $alias)
     {
         if ($alias{0} != '@') {
             return $alias;
@@ -125,7 +127,7 @@ class Piko
      * @param array $properties A name-value pair array corresponding to the object public properties.
      * @return object
      */
-    public static function createObject($type, $properties = [])
+    public static function createObject($type, array $properties = [])
     {
         if (is_array($type)) {
             $properties = $type;
@@ -147,7 +149,7 @@ class Piko
      * @param array $properties A name-value pair array corresponding to the object public properties.
      * @return void
      */
-    public static function configureObject($object, $properties = [])
+    public static function configureObject($object, array $properties = []): void
     {
         foreach ($properties as $key => $value) {
             $object->$key = $value;
@@ -166,7 +168,7 @@ class Piko
      *
      * @see \piko\I18n
      */
-    public static function t($domain, $text, $params = [])
+    public static function t(string $domain, string $text, array $params = []): string
     {
         $i18n = static::get('i18n');
 

@@ -6,6 +6,8 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/ilhooq/piko
  */
+declare(strict_types=1);
+
 namespace piko;
 
 /**
@@ -89,7 +91,7 @@ class AssetBundle extends Component
      * @param View $view the view to be registered with
      * @return AssetBundle the registered asset bundle instance
      */
-    public static function register($view)
+    public static function register($view): AssetBundle
     {
         $className = get_called_class();
         $bundle = new $className();
@@ -132,7 +134,7 @@ class AssetBundle extends Component
      *
      * @return void
      */
-    public function publish()
+    public function publish(): void
     {
         if (!empty($this->sourcePath) && !file_exists(Piko::getAlias($this->publishedBasePath) . '/' . $this->name)) {
             $this->copy(

@@ -6,7 +6,11 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/ilhooq/piko
  */
+declare(strict_types=1);
+
 namespace piko;
+
+use ReflectionClass;
 
 /**
  * Module is the base class for classes containing module logic.
@@ -62,7 +66,7 @@ class Module extends Component
      * {@inheritDoc}
      * @see \piko\Component::init()
      */
-    protected function init()
+    protected function init(): void
     {
         if ($this->controllerNamespace === null) {
             $class = get_class($this);
@@ -80,7 +84,7 @@ class Module extends Component
     public function getBasePath()
     {
         if ($this->basePath === null) {
-            $class = new \ReflectionClass($this);
+            $class = new ReflectionClass($this);
             $this->basePath = dirname($class->getFileName());
         }
 
@@ -94,7 +98,7 @@ class Module extends Component
      * @param string $actionId The controller action identifier.
      * @return mixed The module output.
      */
-    public function run($controllerId, $actionId)
+    public function run(string $controllerId, string $actionId)
     {
         $controllerName = str_replace(' ', '', ucwords(str_replace('-', ' ', $controllerId))) . 'Controller';
         $actionId = str_replace(' ', '', ucwords(str_replace('-', ' ', $actionId)));

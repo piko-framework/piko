@@ -6,6 +6,8 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/ilhooq/piko
  */
+declare(strict_types=1);
+
 namespace piko;
 
 /**
@@ -13,7 +15,7 @@ namespace piko;
  *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
-class Controller extends Component
+abstract class Controller extends Component
 {
     /**
      * The controller identifier.
@@ -54,14 +56,14 @@ class Controller extends Component
      * @return mixed the result of the action.
      * @throws \RuntimeException if the requested action ID cannot be resolved into an action successfully.
      */
-    public function runAction($id)
+    public function runAction(string $id)
     {
         $this->trigger('beforeAction', [$this, $id]);
 
         $methodName = $id . 'Action';
 
         if (!method_exists($this, $methodName)) {
-            throw new \RuntimeException("Method \"$methodName\" not found in " . get_class($this));
+            throw new \RuntimeException("Method \"$methodName\" not found in " . get_called_class());
         }
 
         $output = $this->$methodName();
@@ -75,9 +77,9 @@ class Controller extends Component
      *
      * @param string $viewName The view file name.
      * @param array $data An array of data (name-value pairs) to transmit to the view.
-     * @return string The view output.
+     * @return string|null The view output.
      */
-    public function render($viewName, $data = [])
+    public function render(string $viewName, array $data = []): ?string
     {
         $view = Piko::$app->getView();
         $view->paths[] = $this->getViewPath();

@@ -6,6 +6,8 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/ilhooq/piko
  */
+declare(strict_types=1);
+
 namespace piko;
 
 /**
@@ -61,7 +63,7 @@ class User extends Component
      * {@inheritDoc}
      * @see \piko\Component::init()
      */
-    protected function init()
+    protected function init(): void
     {
         if (!empty($this->authTimeout)) {
             ini_set('session.gc_maxlifetime', $this->authTimeout);
@@ -77,7 +79,7 @@ class User extends Component
      *
      * @return IdentityInterface|null The user identity or null if no identity is found.
      */
-    public function getIdentity()
+    public function getIdentity(): ?IdentityInterface
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
@@ -94,7 +96,7 @@ class User extends Component
     /**
      * Get user identifier.
      *
-     * @return NULL|string|int
+     * @return string|int|null
      */
     public function getId()
     {
@@ -110,7 +112,7 @@ class User extends Component
      * @return void
      * @throws \RuntimeException If identiy doesn't implement IdentityInterface.
      */
-    public function setIdentity($identity)
+    public function setIdentity(IdentityInterface $identity): void
     {
         if (!$identity instanceof IdentityInterface) {
             throw new \RuntimeException('The identity instance must implement IdentityInterface');
@@ -126,7 +128,7 @@ class User extends Component
      * @param IdentityInterface $identity The user identity.
      * @return void
      */
-    public function login($identity)
+    public function login(IdentityInterface $identity): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
@@ -141,7 +143,7 @@ class User extends Component
      * Destroy the session and remove user identity.
      * @return void
      */
-    public function logout()
+    public function logout(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
@@ -158,7 +160,7 @@ class User extends Component
      *
      * @return boolean whether the current user is a guest.
      */
-    public function isGuest()
+    public function isGuest(): bool
     {
         return $this->getIdentity() === null;
     }
@@ -169,7 +171,7 @@ class User extends Component
      * @param string $permission The permission name.
      * @return boolean
      */
-    public function can($permission)
+    public function can(string $permission): bool
     {
         if (isset($this->access[$permission])) {
             return $this->access[$permission];
