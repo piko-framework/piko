@@ -14,9 +14,8 @@
 		<ini name="session.cache_limiter" value="" />
 	</php>
 	<testsuites>
-		<testsuite name="money">
+		<testsuite name="piko-tests">
 			<directory>tests</directory>
 		</testsuite>
 	</testsuites>
-	
 </phpunit>
