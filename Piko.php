@@ -90,7 +90,7 @@ class Piko
      */
     public static function setAlias(string $alias, string $path): void
     {
-        if ($alias{0} != '@') {
+        if ($alias[0] != '@') {
             throw new InvalidArgumentException('Alias must start with the @ character');
         }
 
@@ -105,7 +105,7 @@ class Piko
      */
     public static function getAlias(string $alias)
     {
-        if ($alias{0} != '@') {
+        if ($alias[0] != '@') {
             return $alias;
         }
 
