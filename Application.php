@@ -238,7 +238,7 @@ class Application extends Component
      */
     public function getUser(): ?User
     {
-        return Piko::get('view');
+        return Piko::get('user');
     }
 
     /**
