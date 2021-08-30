@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace piko;
 
+use ErrorException;
+
 /**
  * Base application view.
  * @author Sylvain PHILIP <contact@sphilip.com>
@@ -256,6 +258,26 @@ class View extends Component
     public function escape(string $string): string
     {
         return htmlentities($string, ENT_COMPAT | ENT_HTML5, Piko::$app->charset);
+    }
+
+    /**
+     * Convenient method to convert a route to an url
+     *
+     * @param string $route The route to convert
+     * @param array $params The route params
+     * @throws ErrorException if router is not instance of piko\Router
+     * @return string
+     * @see Router::getUrl
+     */
+    protected function getUrl(string $route, array $params = []): string
+    {
+        $router = Piko::get('router');
+
+        if ($router instanceof Router) {
+            return $router->getUrl($route, $params);
+        }
+
+        throw new ErrorException('Router must be instance of piko\Router');
     }
 
     /**
