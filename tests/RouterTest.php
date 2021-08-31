@@ -18,6 +18,7 @@ class RouterTest extends TestCase
                 '^/page-1' => 'page/default/view|alias=page-1',
                 '^/page-2' => 'page/default/view|alias=page-2',
                 '^/([\w-]+)$' => 'page/default/view|alias=$1',
+                '^/api/even' => 'api/event/index',
                 '^/admin/(\w+)/(\w+)/(\d+)' => '$1/admin/$2|id=$3',
                 '^/(\w+)/(\w+)/(\w+)' => '$1/$2/$3'
             ]
@@ -63,6 +64,9 @@ class RouterTest extends TestCase
 
             $_SERVER['REQUEST_URI'] = $base . '/admin/user/edit/5';
             $this->assertEquals('user/admin/edit', $router->resolve());
+
+            $_SERVER['REQUEST_URI'] = $base . '/api/event';
+            $this->assertEquals('api/event/index', $router->resolve());
         }
     }
 

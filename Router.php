@@ -55,8 +55,17 @@ class Router extends Component
         $uri = '/' . trim($uri, '/');
 
         foreach ($this->routes as $uriPattern => $routePattern) {
-            if (preg_match('`' . $uriPattern . '`', $uri)) {
-                $route = preg_replace('`' . $uriPattern . '`', $routePattern, $uri);
+
+            $matches = [];
+
+            if (preg_match('`' . $uriPattern . '`', $uri, $matches)) {
+
+                foreach ($matches as $i => $match) {
+                    $routePattern = str_replace('$' . $i, $match, $routePattern);
+                }
+
+                $route = $routePattern;
+
                 break;
             }
         }
