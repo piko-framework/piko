@@ -49,7 +49,7 @@ class Router extends Component
         $uri = str_replace(Piko::getAlias('@web'), '', $_SERVER['REQUEST_URI']);
 
         if (($start = strpos($uri, '?')) !== false) {
-            $uri = substr($uri, 0, $start - 1);
+            $uri = substr($uri, 0, $start);
         }
 
         $uri = '/' . trim($uri, '/');
