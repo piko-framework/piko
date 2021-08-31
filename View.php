@@ -256,7 +256,7 @@ class View extends Component
      * @param string $string Dirty html.
      * @return string Clean html.
      */
-    public function escape(string $string): string
+    public function escape(?string $string): string
     {
         return htmlentities($string, ENT_COMPAT | ENT_HTML5, Piko::$app->charset);
     }

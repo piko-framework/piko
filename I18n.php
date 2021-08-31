@@ -64,7 +64,7 @@ class I18n extends Component
      *
      * @return string The translated text or the text itself if no translation was found.
      */
-    public function translate(string $domain, string $text, array $params = []): string
+    public function translate(string $domain, ?string $text, array $params = []): string
     {
         $text = isset($this->messages[$domain][$text]) ? $this->messages[$domain][$text] : $text;
 
