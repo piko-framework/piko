@@ -4,5 +4,5 @@
 /phpunit.xml        export-ignore
 /phpdoc.xml         export-ignore
 /phpdoc             export-ignore
-/api              export-ignore
+/api                export-ignore
 /tests              export-ignore
