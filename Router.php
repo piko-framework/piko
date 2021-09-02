@@ -38,6 +38,12 @@ class Router extends Component
     public $routes = [];
 
     /**
+     * Internal cache for routes uris
+     * @var array
+     */
+    protected $cache = [];
+
+    /**
      * Resolve the application route corresponding to the request uri.
      * The expected route scheme is : '{moduleId}/{controllerId}/{ationId}'
      *
@@ -95,13 +101,76 @@ class Router extends Component
     public function getUrl($route, $params = [])
     {
         $uri = '';
+        $uriParams = '';
+        $routeUris = $this->getRouteUris($route);
+        ksort($params);
+
+        foreach ($routeUris as $uriPattern => $queryStr) {
+
+            $uri = str_replace(['^', '$'], '', $uriPattern);
+            $uriParams = $queryStr;
+            $query = [];
+            parse_str($queryStr, $query);
+            $replace = [];
+            $continue = false;
+
+            foreach ($query as $key => $val) {
+                if (isset($params[$key]) && ($pos = strpos($val, '$')) !== false) {
+                    /* When the query is dynamic.
+                     * Ex: $params == ['alias' => 'page-2'] && $query == ['alias' => '$1']
+                     */
+                    $pos = (int) $val[$pos+1];
+                    $replace[$pos] =  $params[$key];
+                } elseif (!isset($params[$key]) || $params[$key] != $val) {
+                    /* When the query is static.
+                     * Ex: $params == ['alias' => 'page-2'] && $query == ['alias' => 'page-1']
+                     */
+                    $continue = true;
+                    break;
+                }
+            }
+
+            if (count($replace) > 0) {
+                ksort($replace);
+
+                $uri = preg_replace_callback('`\(.*?\)`', function ($matches) use (&$replace) {
+                    return array_shift($replace);
+                }, $uri);
+            }
+
+            if (!$continue) {
+                break;
+            }
+        }
+
+        if (count($params) > 0 && $uriParams === '') {
+            $uri .= '/?' . http_build_query($params);
+        }
+
+        $this->trigger('afterBuildUri', [&$uri]);
+
+        return Piko::getAlias('@web') . $uri;
+    }
+
+    /**
+     * Retrieve all the uris rattached to the route
+     *
+     * @param string $route
+     * @return array
+     */
+    protected function getRouteUris(string $route): array
+    {
+        if (isset($this->cache[$route])) {
+            return $this->cache[$route];
+        }
+
+        $this->cache[$route] = [];
 
         foreach ($this->routes as $uriPattern => $routePattern) {
 
             $strParams = '';
-            $replacements = [];
 
-            // Extract params from $routePattern string
+            // Remove query parameters from $routePattern
             if (($pos = strpos($routePattern, '|')) !== false) {
                 $strParams = substr($routePattern, $pos + 1);
                 $routePattern = substr($routePattern, 0, $pos);
@@ -112,65 +181,30 @@ class Router extends Component
 
                 $routeParts = explode('/', $route);
                 $routePatternParts = explode('/', $routePattern);
-                $matches = [];
+                $replace = [];
 
                 foreach ($routePatternParts as $k => &$part) {
 
-                    if (isset($routeParts[$k]) && preg_match('/\$([0-9]+)/', $part, $matches)) {
-                        $replacements[(int) $matches[1]] = $routeParts[$k];
+                    if (($pos = strpos($part, '$')) !== false && isset($routeParts[$k])) {
+                        $replace[(int) $part[$pos+1]] = $routeParts[$k];
                         $part = $routeParts[$k];
                     }
                 }
+
+                ksort($replace);
+
+                $uriPattern = preg_replace_callback('`\(.*?\)`', function ($matches) use (&$replace) {
+                    return count($replace) ? array_shift($replace) : $matches[0];
+                }, $uriPattern);
 
                 $routePattern = implode('/', $routePatternParts);
             }
 
             if ($route == $routePattern) {
-                // Looking for parameters substitutions
-                if (!empty($params) && !empty($strParams)) {
-                    $res = [];
-                    parse_str($strParams, $res);
-                    $diff = false;
-
-                    foreach ($res as $k => $v) {
-
-                        if (!isset($params[$k]) || (strpos($v, '$') === false && $params[$k] != $v)) {
-                            $diff = true;
-                            break;
-                        }
-
-                        $pos = (int) str_replace('$', '', $v);
-                        $replacements[$pos] =  $params[$k];
-                    }
-
-                    // If params differ, route doesn't match
-                    if ($diff) {
-                        continue;
-                    }
-                }
-
-                if (!empty($replacements)) {
-
-                    $uriPattern = preg_replace_callback('`\(.*?\)`', function ($matches) use ($replacements) {
-                        static $count = 1;
-                        $value = $replacements[$count];
-                        $count++;
-                        return $value;
-                    }, $uriPattern);
-                }
-
-                $uri = str_replace(['^', '$'], '', $uriPattern);
-
-                if (!empty($params) && empty($strParams)) {
-                    $uri .= '/?' . http_build_query($params);
-                }
-
-                break;
+                $this->cache[$route][$uriPattern] = $strParams;
             }
         }
 
-        $this->trigger('afterBuildUri', [&$uri]);
-
-        return Piko::getAlias('@web') . $uri;
+        return $this->cache[$route];
     }
 }

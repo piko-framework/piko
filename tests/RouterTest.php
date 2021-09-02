@@ -19,7 +19,10 @@ class RouterTest extends TestCase
                 '^/page-2' => 'page/default/view|alias=page-2',
                 '^/([\w-]+)$' => 'page/default/view|alias=$1',
                 '^/api/even' => 'api/event/index',
+                '^/blog/year/(\d+)$' => 'site/index/index|filter=year&slug=$1',
+                '^/blog/category/(\w+)$' => 'site/index/index|filter=category&slug=$1',
                 '^/admin/(\w+)/(\w+)/(\d+)' => '$1/admin/$2|id=$3',
+                '^/events/(\w+)/(\w+)/(\d+)' => 'events/$2/$1|id=$3',
                 '^/(\w+)/(\w+)/(\w+)' => '$1/$2/$3'
             ]
         ]);
@@ -67,6 +70,20 @@ class RouterTest extends TestCase
 
             $_SERVER['REQUEST_URI'] = $base . '/api/event';
             $this->assertEquals('api/event/index', $router->resolve());
+
+            $_SERVER['REQUEST_URI'] = $base . '/events/edit/user/15';
+            $this->assertEquals('events/user/edit', $router->resolve());
+            $this->assertEquals('15', $_GET['id']);
+
+            $_SERVER['REQUEST_URI'] = $base . '/blog/year/2023';
+            $this->assertEquals('site/index/index', $router->resolve());
+            $this->assertEquals('year', $_GET['filter']);
+            $this->assertEquals('2023', $_GET['slug']);
+
+            $_SERVER['REQUEST_URI'] = $base . '/blog/category/tutu';
+            $this->assertEquals('site/index/index', $router->resolve());
+            $this->assertEquals('category', $_GET['filter']);
+            $this->assertEquals('tutu', $_GET['slug']);
         }
     }
 
@@ -78,18 +95,48 @@ class RouterTest extends TestCase
 
         foreach ($bases as $base) {
             Piko::setAlias('@web', $base);
+
+            // '^/$' => 'test/test/index'
             $this->assertEquals($base . '/', $router->getUrl('test/test/index'));
+
+            // '^/user/(\d+)' => 'user/default/view|id=$1'
             $this->assertEquals($base . '/user/2',  $router->getUrl('user/default/view', ['id' => 2]));
+
+            // '^/portfolio/(\w+)/(\d+)' => 'portfolio/default/view|alias=$1&category=$2'
             $this->assertEquals($base . '/portfolio/toto/5', $router->getUrl(
                 'portfolio/default/view',
                 ['category' => 5, 'alias' => 'toto']
             ));
+
+            // '^/page-1' => 'page/default/view|alias=page-1'
             $this->assertEquals($base . '/page-1',  $router->getUrl('page/default/view', ['alias' => 'page-1']));
+
+            // '^/page-2' => 'page/default/view|alias=page-2',
             $this->assertEquals($base . '/page-2',  $router->getUrl('page/default/view', ['alias' => 'page-2']));
+
+            // '^/([\w-]+)$' => 'page/default/view|alias=$1',
             $this->assertEquals($base . '/page-3',  $router->getUrl('page/default/view', ['alias' => 'page-3']));
+
+            // '^/(\w+)/(\w+)/(\w+)' => '$1/$2/$3'
             $this->assertEquals($base . '/blog/default/index', $router->getUrl('blog/default/index'));
+
+            // '^/(\w+)/(\w+)/(\w+)' => '$1/$2/$3'
             $this->assertEquals($base . '/blog/default/view/?id=2', $router->getUrl('blog/default/view', ['id' => 2]));
+
+            // '^/admin/(\w+)/(\w+)/(\d+)' => '$1/admin/$2|id=$3'
             $this->assertEquals($base . '/admin/user/edit/5', $router->getUrl('user/admin/edit', ['id' => 5]));
+
+            // '^/events/(\w+)/(\w+)/(\d+)' => 'events/$2/$1|id=$3'
+            $this->assertEquals($base . '/events/edit/user/5', $router->getUrl('events/user/edit', ['id' => 5]));
+
+            // '^/blog/year/(\d+)$' => 'site/index/index|filter=year&slug=$1'
+            $this->assertEquals($base . '/blog/year/2021', $router->getUrl('site/index/index', ['slug' => '2021', 'filter' => 'year']));
+
+            // '^/blog/category/(\d+)$' => 'site/index/index|filter=category&slug=$1'
+            $this->assertEquals($base . '/blog/category/test', $router->getUrl('site/index/index', ['slug' => 'test', 'filter' => 'category']));
+
+            // '^/(\w+)/(\w+)/(\w+)' => '$1/$2/$3'
+            $this->assertEquals($base . '/site/index/index/?slug=test&unknown=category', $router->getUrl('site/index/index', ['slug' => 'test', 'unknown' => 'category']));
         }
     }
 }
