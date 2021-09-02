@@ -266,16 +266,17 @@ class View extends Component
      *
      * @param string $route The route to convert
      * @param array $params The route params
+     * @param boolean $absolute Optional to have an absolute url.
      * @throws RuntimeException if router is not instance of piko\Router
      * @return string
      * @see Router::getUrl
      */
-    protected function getUrl(string $route, array $params = []): string
+    protected function getUrl(string $route, array $params = [], bool $absolute = false): string
     {
         $router = Piko::get('router');
 
         if ($router instanceof Router) {
-            return $router->getUrl($route, $params);
+            return $router->getUrl($route, $params, $absolute);
         }
 
         throw new RuntimeException('Router must be instance of piko\Router');

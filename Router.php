@@ -96,9 +96,10 @@ class Router extends Component
      *
      * @param string $route The route given as '{moduleId}/{controllerId}/{ationId}'.
      * @param array $params Optional query parameters.
+     * @param boolean $absolute Optional to have an absolute url.
      * @return string The url.
      */
-    public function getUrl($route, $params = [])
+    public function getUrl(string $route, array $params = [], $absolute = false)
     {
         $uri = '';
         $uriParams = '';
@@ -148,6 +149,10 @@ class Router extends Component
         }
 
         $this->trigger('afterBuildUri', [&$uri]);
+
+        if ($absolute) {
+            return $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . Piko::getAlias('@web') . $uri;
+        }
 
         return Piko::getAlias('@web') . $uri;
     }

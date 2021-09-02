@@ -32,7 +32,7 @@ class RouterTest extends TestCase
 
     public function testResolve()
     {
-        $router = Piko::get('router');
+        $router = Piko::$app->getRouter();
 
         $bases = ['', '/subdir'];
 
@@ -89,7 +89,7 @@ class RouterTest extends TestCase
 
     public function testGetUrl()
     {
-        $router = Piko::get('router');
+        $router = Piko::$app->getRouter();
 
         $bases = ['', '/subdir'];
 
@@ -138,5 +138,16 @@ class RouterTest extends TestCase
             // '^/(\w+)/(\w+)/(\w+)' => '$1/$2/$3'
             $this->assertEquals($base . '/site/index/index/?slug=test&unknown=category', $router->getUrl('site/index/index', ['slug' => 'test', 'unknown' => 'category']));
         }
+    }
+
+    public function testGetAbsoluteUrl()
+    {
+        $_SERVER['REQUEST_SCHEME'] = 'https';
+        $_SERVER['HTTP_HOST'] = 'www.sphilip.com';
+        Piko::setAlias('@web', '');
+
+        $router = Piko::$app->getRouter();
+        // '^/user/(\d+)' => 'user/default/view|id=$1'
+        $this->assertEquals('https://www.sphilip.com/user/2',  $router->getUrl('user/default/view', ['id' => 2], true));
     }
 }
