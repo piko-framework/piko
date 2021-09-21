@@ -88,4 +88,14 @@ class ApplicationTest extends TestCase
 
         $this->assertEquals('55', $output);
     }
+
+    public function testHeaders()
+    {
+        $app = new Application([]);
+        $app->setHeader('Location: /test');
+        $app->setHeader(' Content-Type :appllication/json ');
+
+        $this->assertEquals('/test', $app->headers['Location']);
+        $this->assertEquals('appllication/json', $app->headers['Content-Type']);
+    }
 }

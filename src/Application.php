@@ -83,6 +83,13 @@ class Application extends Component
     public $language = 'en';
 
     /**
+     * The response headers.
+     *
+     * @var array
+     */
+    public $headers = [];
+
+    /**
      * Constructor
      *
      * @param array $config The application configuration.
@@ -206,9 +213,29 @@ class Application extends Component
             $output = $view->render($layout, ['content' => $output]);
         }
 
-        $this->trigger('afterRender', [&$module, &$output]);
+        $this->trigger('afterRender', [&$module, &$output, &$this->headers]);
+
+        foreach ($this->headers as $header => $value) {
+            header($header . ':' . $value);
+        }
 
         return $output;
+    }
+
+    /**
+     * Set Response header
+     *
+     * @param string $header The complete header (key:value) or just the header key
+     * @param string $value  (optional) The header value
+     */
+    public function setHeader(string $header, string $value = null) : void
+    {
+        if (($pos = strpos($header, ':')) !== false) {
+            $value = trim(substr($header, $pos+1));
+            $header = trim(substr($header, 0, $pos));
+        }
+
+        $this->headers[$header] = $value;
     }
 
     /**
@@ -256,17 +283,5 @@ class Application extends Component
         }
 
         return Piko::createObject($this->config['modules'][$moduleId]);
-    }
-
-    /**
-     * Redirect the application to another url.
-     *
-     * @param string $url
-     * @return void
-     */
-    public function redirect($url)
-    {
-        header('Location: ' . $url);
-        exit();
     }
 }

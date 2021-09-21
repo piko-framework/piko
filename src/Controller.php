@@ -90,13 +90,13 @@ abstract class Controller extends Component
     }
 
     /**
-     * Proxy to Application::redirect
+     * Set a response redirection
      *
      * @param string $url The url to redirect
      */
     protected function redirect(string $url): void
     {
-        Piko::$app->redirect($url);
+        Piko::$app->setHeader('Location', $url);
     }
 
     /**
