@@ -1,7 +1,6 @@
 <?php
 use PHPUnit\Framework\TestCase;
 use piko\Piko;
-use piko\Utils;
 
 class PikoTest extends TestCase
 {
@@ -11,19 +10,6 @@ class PikoTest extends TestCase
         $date2 = Piko::createObject('DateTime');
 
         $this->assertEquals(spl_object_hash($date), spl_object_hash($date2));
-    }
-
-    public function testEnvFile()
-    {
-        $data = "\t  APP_LANGUAGE  =      fr\r\n";
-        $data .= "APP_EMAIL      =      \n";
-        $data .= "ENV      =   dev   \n";
-
-        Utils::parseEnvFile('data:text/plain;base64,' . base64_encode($data));
-
-        $this->assertEquals('fr', getenv('APP_LANGUAGE'));
-        $this->assertEmpty(getenv('APP_EMAIL'));
-        $this->assertEquals('dev', getenv('ENV'));
     }
 
     public function testAlias()
