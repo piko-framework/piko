@@ -34,9 +34,17 @@ Controller is the base class for classes containing controller logic.
 |------|-------------|
 | public [`runAction`](#method_runAction) | Runs an action within this controller with the spe... |
 | protected [`forward`](#method_forward) | Proxy to Application::dispatch  |
+| protected [`getMethod`](#method_getMethod) | Get the request method  |
 | protected [`getUrl`](#method_getUrl) | Convenient method to convert a route to an url  |
 | protected [`getViewPath`](#method_getViewPath) | Returns the directory containing view files for th... |
-| protected [`redirect`](#method_redirect) | Proxy to Application::redirect  |
+| protected [`isAjax`](#method_isAjax) | Check if the request is AJAX  |
+| protected [`isDelete`](#method_isDelete) | Check if the request method is DELETE  |
+| protected [`isGet`](#method_isGet) | Check if the request method is GET  |
+| protected [`isPost`](#method_isPost) | Check if the request method is POST  |
+| protected [`isPut`](#method_isPut) | Check if the request method is PUT  |
+| protected [`jsonResponse`](#method_jsonResponse) | Convenient method to return a JSON response  |
+| protected [`rawInput`](#method_rawInput) | Get the raw input data of the request  |
+| protected [`redirect`](#method_redirect) | Set a response redirection  |
 | protected [`render`](#method_render) | Render a view.  |
 
 ## Inherited Methods
@@ -160,6 +168,30 @@ The route to forward
 
 
 
+<a name="method_getMethod"></a>
+### protected getMethod(): string
+
+```php
+protected  getMethod(): string
+```
+
+Get the request method
+
+
+
+
+
+
+
+
+#### Return:
+**string**
+
+
+-----
+
+
+
 <a name="method_getUrl"></a>
 ### protected getUrl(): string
 
@@ -223,6 +255,182 @@ the directory containing the view files for this controller.
 
 
 
+<a name="method_isAjax"></a>
+### protected isAjax(): bool
+
+```php
+protected  isAjax(): bool
+```
+
+Check if the request is AJAX
+
+
+
+
+
+
+
+
+#### Return:
+**bool**
+
+
+-----
+
+
+
+<a name="method_isDelete"></a>
+### protected isDelete(): bool
+
+```php
+protected  isDelete(): bool
+```
+
+Check if the request method is DELETE
+
+
+
+
+
+
+
+
+#### Return:
+**bool**
+
+
+-----
+
+
+
+<a name="method_isGet"></a>
+### protected isGet(): bool
+
+```php
+protected  isGet(): bool
+```
+
+Check if the request method is GET
+
+
+
+
+
+
+
+
+#### Return:
+**bool**
+
+
+-----
+
+
+
+<a name="method_isPost"></a>
+### protected isPost(): bool
+
+```php
+protected  isPost(): bool
+```
+
+Check if the request method is POST
+
+
+
+
+
+
+
+
+#### Return:
+**bool**
+
+
+-----
+
+
+
+<a name="method_isPut"></a>
+### protected isPut(): bool
+
+```php
+protected  isPut(): bool
+```
+
+Check if the request method is PUT
+
+
+
+
+
+
+
+
+#### Return:
+**bool**
+
+
+-----
+
+
+
+<a name="method_jsonResponse"></a>
+### protected jsonResponse(): string
+
+```php
+protected  jsonResponse(mixed  $data): string
+```
+
+Convenient method to return a JSON response
+
+
+
+#### Parameters
+**$data** :
+
+
+
+
+
+
+
+#### Return:
+**string**
+
+
+-----
+
+
+
+<a name="method_rawInput"></a>
+### protected rawInput(): string
+
+```php
+protected  rawInput(int  $size = 1024): string
+```
+
+Get the raw input data of the request
+
+
+
+#### Parameters
+**$size**  (default: 1024):
+The size in bytes of the raw input
+
+
+
+
+
+
+#### Return:
+**string**
+
+
+-----
+
+
+
 <a name="method_redirect"></a>
 ### protected redirect(): void
 
@@ -230,7 +438,7 @@ the directory containing the view files for this controller.
 protected  redirect(string  $url): void
 ```
 
-Proxy to Application::redirect
+Set a response redirection
 
 
 

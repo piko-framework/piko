@@ -22,6 +22,7 @@ The Web application class
 | public [`$defaultLayout`](#property_defaultLayout) | The default layout name without file extension.  |
 | public [`$defaultLayoutPath`](#property_defaultLayoutPath) | The default layout path. An alias could be used.  |
 | public [`$errorRoute`](#property_errorRoute) | The Error route to display exceptions in a friendl... |
+| public [`$headers`](#property_headers) | The response headers.  |
 | public [`$language`](#property_language) | The language that is meant to be used for end user... |
 
 ## Inherited Properties
@@ -42,8 +43,8 @@ The Web application class
 | public [`getRouter`](#method_getRouter) | Get the application router instance  |
 | public [`getUser`](#method_getUser) | Get the application user instance  |
 | public [`getView`](#method_getView) | Get the application view instance  |
-| public [`redirect`](#method_redirect) | Redirect the application to another url.  |
 | public [`run`](#method_run) | Run the application.  |
+| public [`setHeader`](#method_setHeader) | Set Response header  |
 
 ## Inherited Methods
 
@@ -125,6 +126,15 @@ The default layout path. An alias could be used.
 ### public $errorRoute : string
 The Error route to display exceptions in a friendly way.
 If not set, Exceptions catched will be thrown and stop the script execution.
+
+
+
+
+
+<a name="property_headers"></a>
+### public $headers : array
+The response headers.
+
 
 
 
@@ -306,19 +316,15 @@ instance
 
 
 
-<a name="method_redirect"></a>
-### public redirect(): void
+<a name="method_run"></a>
+### public run(): void
 
 ```php
-public  redirect(string  $url): void
+public  run(): void
 ```
 
-Redirect the application to another url.
+Run the application.
 
-
-
-#### Parameters
-**$url** :
 
 
 
@@ -330,16 +336,23 @@ Redirect the application to another url.
 
 
 
-<a name="method_run"></a>
-### public run(): void
+<a name="method_setHeader"></a>
+### public setHeader(): void
 
 ```php
-public  run(): void
+public  setHeader(string  $header, string  $value = null): void
 ```
 
-Run the application.
+Set Response header
 
 
+
+#### Parameters
+**$header** :
+The complete header (key:value) or just the header key
+
+**$value**  (default: null):
+(optional) The header value
 
 
 
