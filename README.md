@@ -1,16 +1,26 @@
-# Piko
+# Overview
 
-Piko is a Web micro Framework inspired by Yii2 Framework to build MVC applications.
-It requires no dependencies and should be sufficient for simple projects.
+Piko is Web micro Framework to build [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller)
+applications.
 
-The framework approach is modular : each request is dispatched to internal route which corresponds to a module,
-a controller and a controller action.
+[https://piko-framework.github.io/](https://piko-framework.github.io/)
 
-Each component of the framework is an event manager. It's possible to inject custom code when events are triggered.
+## specifications
 
-The view rendering is done in two stages : one for the global layout and one for the controller action rendering.
+ - Lightweight: It requires no composer dependencies and its code base is under 100kb.
+ - Fast: Basic routing, components lasy loading and uses PHP as template engine.
+ - Customizable: The framework can be extended throw Event hooks and behavior injections.
+ - Stable: The framework components have been well tested and the API is fixed.
+ - Modular : internal routes correspond to MVC modules.
 
-Also, the framework offers simple ways to manipulate databases and to manage users.
+## Features
+
+ - Router: resolve url to routes and get url from routes.
+ - Base Classes for controllers and models.
+ - Views : Layout management and themable views.
+ - I18n : To internatinalize applications.
+ - User session management: user login / logout and user permissions.
+ - Assets management : To use external assets in your project
 
 ## Installation via composer
 
@@ -18,109 +28,14 @@ Also, the framework offers simple ways to manipulate databases and to manage use
 composer require piko/framework
 ```
 
-## Getting started
+## Quick start
 
-A trivial example :
+The [Piko project skeletton](https://github.com/piko-framework/piko-project) can be used to start a piko based project.
 
-```php
-<?php
-use piko\Application;
-use piko\Module;
-use piko\Controller;
+## Documentation
 
-require('vendor/autoload.php');
-
-class SiteModule extends Module
-{
-
-}
-
-class HelloController extends Controller
-{
-    public $layout = false;
-
-    public function indexAction()
-    {
-        return 'Hello World!';
-    }
-
-    public function index2Action()
-    {
-        return 'Hello ' . (isset($_GET['name'])? $_GET['name'] : 'Unknown') . '!' ;
-    }
-    
-    public function index3Action()
-    {
-        return 'Hello guy!';
-    }
-}
-
-$config = [
-    'basePath' => __DIR__,
-    'components' => [
-        'router' => [
-            'class' => 'piko\Router',
-            'routes' => [
-                '^/$' => 'site/hello/index',
-                '^/hello/(\w+)' => 'site/hello/index2|name=$1',
-                '^/(\w+)/(\w+)/(\w+)' => '$1/$2/$3'
-            ],
-        ]
-    ],
-    'modules' => [
-        'site' => [
-            'class' => 'SiteModule',
-            'controllerMap' => [
-                'hello' => 'HelloController'
-            ]
-         ]
-    ]
-];
-
-
-(new Application($config))->run();
-```
-
-To quickly test, you can use the php builtin web server:
-
-```bash
-php -S localhost:8080
-```
-
-If you go to `http://localhost:8080/` you will get the the message "Hello World!". The router associates the uri / to the route `site/hello/index`.
-(`'^/$' => 'site/hello/index'`) in the configuration.
-
-The route is composed with a module identifier (`site`), a controller identifier (`hello`) and a controller action (`index`)
-
-Also it's possible to transmit parameters to a route. If you go to `http://localhost:8080/hello/martin` you will get the the message "Hello martin!".
-The router associate the uri /hello/(\w+) to the route `site/hello/index2|name=$1` and populate the global $_GET array with the `name` parameter.
-
-Finally, the uri can math the route with `'^/(\w+)/(\w+)/(\w+)' => '$1/$2/$3'`.
-If you go to `http://localhost:8080/site/hello/index3` you will get "Hello guy!".
-
-## Quick start application
-
-The [Piko project skeletton](https://github.com/ilhooq/piko-project) is an example on how to structure a Piko based application.
-
-1. Install via composer
-
-If you do not have [Composer](http://getcomposer.org/), you may install it by following the instructions
-at [getcomposer.org](http://getcomposer.org/doc/00-intro.md#installation-nix).
-
-You can then install this project template using the following command:
-
-```bash
-composer create-project ilhooq/piko-project yourproject
-```
-
-2. Run
-
-```bash
-cd yourproject && php -S localhost:8080 -t web
-```
+[https://piko-framework.github.io/](https://piko-framework.github.io/)
 
 ## Inspiration
 
-The concepts used in Piko are heavily inspired by [Yii2 framework](https://www.yiiframework.com/).
-
-
+Concepts used in Piko were inspired from the [Yii2 framework](https://www.yiiframework.com/).
