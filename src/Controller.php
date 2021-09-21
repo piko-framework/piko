@@ -147,4 +147,97 @@ abstract class Controller extends Component
 
         return $this->viewPath;
     }
+
+    /**
+     * Check if the request is AJAX
+     * @return boolean
+     */
+    protected function isAjax(): bool
+    {
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get the request method
+     *
+     * @return string
+     */
+    protected function getMethod(): string
+    {
+        return $_SERVER['REQUEST_METHOD'] ?? '';
+    }
+
+    /**
+     * Check if the request method is GET
+     *
+     * @return boolean
+     */
+    protected function isGet(): bool
+    {
+        return $this->getMethod() === 'GET';
+    }
+
+    /**
+     * Check if the request method is POST
+     *
+     * @return boolean
+     */
+    protected function isPost(): bool
+    {
+        return $this->getMethod() === 'POST';
+    }
+
+    /**
+     * Check if the request method is PUT
+     *
+     * @return boolean
+     */
+    protected function isPut(): bool
+    {
+        return $this->getMethod() === 'PUT';
+    }
+
+    /**
+     * Check if the request method is DELETE
+     *
+     * @return boolean
+     */
+    protected function isDelete(): bool
+    {
+        return $this->getMethod() === 'DELETE';
+    }
+
+    /**
+     * Get the raw input data of the request
+     *
+     * @param int $size The size in bytes of the raw input
+     * @return string
+     */
+    protected function rawInput($size = 1024)
+    {
+        $handle = fopen('php://input', 'r');
+        $data = fread($handle, $size);
+        fclose($handle);
+
+        return $data;
+    }
+
+    /**
+     * Convenient method to return a JSON response
+     *
+     * @param mixed $data
+     * @return string
+     */
+    protected function jsonResponse($data)
+    {
+        $this->layout = false;
+        Piko::$app->setHeader('Content-Type', 'application/json');
+
+        return json_encode($data);
+    }
 }
