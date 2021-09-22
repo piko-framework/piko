@@ -129,7 +129,10 @@ class Application extends Component
         parent::__construct($config);
 
         if (!isset($config['components']['view'])) {
-            $config['components']['view'] = 'piko\View';
+            $config['components']['view'] = [
+                'class' => 'piko\View',
+                'charset' => $this->charset
+            ];
         }
 
         if (!isset($config['components']['router'])) {
