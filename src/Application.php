@@ -220,7 +220,12 @@ class Application extends Component
 
         $moduleId = array_shift($parts);
         $actionId = array_pop($parts) ?? 'index';
-        $controllerId = array_pop($parts) ?? 'index';
+        $controllerId = array_pop($parts);
+
+        if ($controllerId === null) {
+            $controllerId = $actionId;
+            $actionId = 'index';
+        }
 
         $module = $this->getModule($moduleId);
 
