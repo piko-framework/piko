@@ -212,11 +212,11 @@ class Application extends Component
      */
     public function dispatch($route)
     {
-        $parts = explode('/', trim($route, '/'));
-
-        if (!count($parts)) {
+        if ($route === '') {
             throw new HttpException('Route not defined', 500);
         }
+
+        $parts = explode('/', trim($route, '/'));
 
         $moduleId = array_shift($parts);
         $actionId = array_pop($parts) ?? 'index';
