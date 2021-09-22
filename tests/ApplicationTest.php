@@ -3,6 +3,9 @@ use PHPUnit\Framework\TestCase;
 
 use piko\Piko;
 use piko\Application;
+use piko\HttpException;
+use piko\Router;
+use piko\View;
 
 class ApplicationTest extends TestCase
 {
@@ -11,7 +14,24 @@ class ApplicationTest extends TestCase
         Piko::reset();
     }
 
-    public function testRoutes()
+    public function testRunWithEmptyConfiguration()
+    {
+        $_SERVER['REQUEST_URI'] = '/';
+
+        $app = new Application([]);
+
+        $this->assertInstanceOf(Router::class, $app->getRouter());
+        $this->assertInstanceOf(View::class, $app->getView());
+        $this->assertNull($app->getUser());
+
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage('Route not defined');
+        $this->expectExceptionCode(500);
+
+        $app->run();
+    }
+
+    public function testRun()
     {
         $config = [
             'basePath' => __DIR__,
@@ -29,59 +49,114 @@ class ApplicationTest extends TestCase
             ],
             'modules' => [
                 'test' => 'tests\modules\test\TestModule',
-            ]
+            ],
+            'bootstrap' => ['test'],
         ];
 
         $_SERVER['SCRIPT_NAME'] = '';
         $_SERVER['SCRIPT_FILENAME'] = '';
         $_SERVER['DOCUMENT_ROOT'] = '';
 
-        Piko::$app = new Application($config);
+        new Application($config);
 
         $_SERVER['REQUEST_URI'] = '/';
 
         ob_start();
         Piko::$app->run();
-        $output = ob_get_contents();
-        ob_end_clean();
+        $this->assertEquals('index Action', ob_get_clean());
 
-        $this->assertEquals('index Action', $output);
-
-        $_SERVER['REQUEST_URI'] = '/test/test/index2';
-
-        ob_start();
-        Piko::$app->run();
-        $output = ob_get_contents();
-        ob_end_clean();
-
-        $this->assertEquals('index2 Action', $output);
+        // Test if TestModule::bootstrap() has been called
+        $this->assertEquals(Piko::get('TestModule::bootstrap'), true);
 
         $_SERVER['REQUEST_URI'] = '/user/55';
 
         ob_start();
         Piko::$app->run();
-        $output = ob_get_contents();
-        ob_end_clean();
-
-        $this->assertEquals('55', $output);
+        $this->assertEquals('55', ob_get_clean());
 
         $_SERVER['REQUEST_URI'] = '/test/sub/test/index';
 
         ob_start();
         Piko::$app->run();
-        $output = ob_get_contents();
-        ob_end_clean();
-
-        $this->assertEquals('TestModule::SubModule::TestController::indexAction', $output);
+        $this->assertEquals('TestModule::SubModule::TestController::indexAction', ob_get_clean());
 
         $_SERVER['REQUEST_URI'] = '/test/sub/til/test/index';
 
         ob_start();
         Piko::$app->run();
-        $output = ob_get_contents();
-        ob_end_clean();
+        $this->assertEquals('TestModule::SubModule::SubtilModule::TestController::indexAction',  ob_get_clean());
+    }
 
-        $this->assertEquals('TestModule::SubModule::SubtilModule::TestController::indexAction', $output);
+    public function testErrorRoute()
+    {
+        $config = [
+            'errorRoute' => 'test/test/error',
+            'modules' => [
+                'test' => 'tests\modules\test\TestModule'
+            ]
+        ];
+
+        $_SERVER['REQUEST_URI'] = '/';
+
+        $app = new Application($config);
+
+        ob_start();
+        $app->run();
+        $output = ob_get_clean();
+
+        $this->assertEquals('Route not defined', $output);
+    }
+
+    public function testDefaultLayout()
+    {
+        $config = [
+            'basePath' => __DIR__,
+            'components' => [
+                'router' => [
+                    'class' => 'piko\Router',
+                    'routes' => [
+                        '^/$' => 'test/test/index2',
+                    ],
+                ]
+            ],
+            'modules' => [
+                'test' => 'tests\modules\test\TestModule'
+            ]
+        ];
+
+        $_SERVER['REQUEST_URI'] = '/';
+
+        $app = new Application($config);
+
+        ob_start();
+        $app->run();
+        $output = ob_get_clean();
+
+        $this->assertMatchesRegularExpression('~<!DOCTYPE html>~', $output);
+        $this->assertMatchesRegularExpression('~index2 Action~', $output);
+    }
+
+    public function testUndeclaredModule()
+    {
+        $config = [
+            'components' => [
+                'router' => [
+                    'class' => 'piko\Router',
+                    'routes' => [
+                        '^/$' => 'blog/index/index',
+                    ],
+                ]
+            ],
+        ];
+
+        $_SERVER['REQUEST_URI'] = '/';
+
+        $app = new Application($config);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Configuration not found for module blog.');
+
+        $app->run();
     }
 
     public function testIncompleteRoutes()
@@ -121,13 +196,35 @@ class ApplicationTest extends TestCase
         $this->assertEquals('TestModule::SubModule::SubtilModule::TestController::indexAction', $output);
     }
 
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testHeaders()
     {
-        $app = new Application([]);
-        $app->setHeader('Location: /test');
-        $app->setHeader(' Content-Type :appllication/json ');
+        $config = [
+            'components' => [
+                'router' => [
+                    'class' => 'piko\Router',
+                    'routes' => [
+                        '^/$' => 'test/test/index',
+                    ],
+                ]
+            ],
+            'modules' => [
+                'test' => 'tests\modules\test\TestModule'
+            ]
+        ];
 
-        $this->assertEquals('/test', $app->headers['Location']);
-        $this->assertEquals('appllication/json', $app->headers['Content-Type']);
+        $_SERVER['REQUEST_URI'] = '/';
+
+        $app = new Application($config);
+        $app->setHeader('Location: /test');
+        $app->setHeader(' Content-Type :application/json ');
+
+        $app->run();
+
+        $this->assertContains('Location:/test', xdebug_get_headers());
+        $this->assertContains('Content-Type:application/json', xdebug_get_headers());
     }
 }

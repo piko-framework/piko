@@ -258,7 +258,7 @@ class View extends Component
      */
     public function escape(?string $string): string
     {
-        return htmlentities($string, ENT_COMPAT | ENT_HTML5, Piko::$app->charset);
+        return $string === null ? '' : htmlentities($string, ENT_COMPAT | ENT_HTML5, Piko::$app->charset);
     }
 
     /**

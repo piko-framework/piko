@@ -1,6 +1,7 @@
 <?php
 namespace tests\modules\test\controllers;
 
+use piko\Piko;
 
 class TestController extends \piko\Controller
 {
@@ -11,8 +12,19 @@ class TestController extends \piko\Controller
         return 'index Action';
     }
 
+    public function errorAction()
+    {
+        $exception = Piko::get('exception');
+
+        if ($exception instanceof \Throwable) {
+            return $exception->getMessage();
+        }
+    }
+
     public function index2Action()
     {
+        $this->layout = 'main';
+
         return 'index2 Action';
     }
 
