@@ -28,6 +28,34 @@ class Application extends Component
     public $basePath = '';
 
     /**
+     * List of modules configurations.
+     *
+     * Should be either :
+     *
+     * ```php
+     * [
+     *   'moduleId' => 'moduleClassName'
+     * ]
+     * ```
+     *
+     * Or :
+     *
+     * ```php
+     * [
+     *   'moduleId' => [
+     *     'class' => 'moduleClassName',
+     *     'layoutPath' => '/some/path'
+     *     // ...
+     *   ]
+     * ]
+     * ```
+     *
+     * @var array
+     * @see Module To have more informations on module attributes
+     */
+    public $modules = [];
+
+    /**
      * List of module IDs that should be run during the application bootstrapping process.
      *
      * Each module may be specified with a module ID as specified via [[modules]].
@@ -143,7 +171,7 @@ class Application extends Component
     public function run()
     {
         foreach ($this->bootstrap as $name) {
-            $module = Piko::createObject($this->config['modules'][$name]);
+            $module = Piko::createObject($this->modules[$name]);
 
             if ($module instanceof Module && method_exists($module, 'bootstrap')) {
                 $module->bootstrap();
@@ -279,10 +307,10 @@ class Application extends Component
      */
     public function getModule($moduleId)
     {
-        if (!isset($this->config['modules'][$moduleId])) {
+        if (!isset($this->modules[$moduleId])) {
             throw new RuntimeException("Configuration not found for module {$moduleId}.");
         }
 
-        return Piko::createObject($this->config['modules'][$moduleId]);
+        return Piko::createObject($this->modules[$moduleId]);
     }
 }
