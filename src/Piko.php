@@ -176,4 +176,12 @@ class Piko
 
         return is_object($i18n) ? $i18n->translate($domain, $text, $params) : $text;
     }
+
+    public static function reset(): void
+    {
+        static::$app = null;
+        static::$aliases = [];
+        static::$registry = [];
+        static::$singletons = [];
+    }
 }

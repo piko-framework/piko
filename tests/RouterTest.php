@@ -21,9 +21,12 @@ class RouterTest extends TestCase
                 '^/api/even' => 'api/event/index',
                 '^/blog/year/(\d+)$' => 'site/index/index|filter=year&slug=$1',
                 '^/blog/category/(\w+)$' => 'site/index/index|filter=category&slug=$1',
+                '^/admin/shop/(\w+)/(\w+)/(\d+)' => 'shop/admin/$1/$2|id=$3',
                 '^/admin/(\w+)/(\w+)/(\d+)' => '$1/admin/$2|id=$3',
                 '^/events/(\w+)/(\w+)/(\d+)' => 'events/$2/$1|id=$3',
-                '^/(\w+)/(\w+)/(\w+)' => '$1/$2/$3'
+                '^/(\w+)/(\w+)/(\w+)$' => '$1/$2/$3',
+                '^/(\w+)/(\w+)/(\w+)/(\w+)$' => '$1/$2/$3/$4',
+                '^/(\w+)/(\w+)/(\w+)/(\w+)/(\w+)$' => '$1/$2/$3/$4/$5',
             ]
         ]);
 
@@ -68,6 +71,9 @@ class RouterTest extends TestCase
             $_SERVER['REQUEST_URI'] = $base . '/admin/user/edit/5';
             $this->assertEquals('user/admin/edit', $router->resolve());
 
+            $_SERVER['REQUEST_URI'] = $base . '/admin/shop/products/edit/5';
+            $this->assertEquals('shop/admin/products/edit', $router->resolve());
+
             $_SERVER['REQUEST_URI'] = $base . '/api/event';
             $this->assertEquals('api/event/index', $router->resolve());
 
@@ -84,6 +90,12 @@ class RouterTest extends TestCase
             $this->assertEquals('site/index/index', $router->resolve());
             $this->assertEquals('category', $_GET['filter']);
             $this->assertEquals('tutu', $_GET['slug']);
+
+            $_SERVER['REQUEST_URI'] = $base . '/test/sub/test/index';
+            $this->assertEquals('test/sub/test/index', $router->resolve());
+
+            $_SERVER['REQUEST_URI'] = $base . '/test/sub/til/test/index';
+            $this->assertEquals('test/sub/til/test/index', $router->resolve());
         }
     }
 
@@ -126,6 +138,11 @@ class RouterTest extends TestCase
             // '^/admin/(\w+)/(\w+)/(\d+)' => '$1/admin/$2|id=$3'
             $this->assertEquals($base . '/admin/user/edit/5', $router->getUrl('user/admin/edit', ['id' => 5]));
 
+            // '^/admin/shop/(\w+)/(\w+)/(\d+)' => 'shop/admin/$1/$2|id=$3'
+            $this->assertEquals($base . '/admin/shop/products/edit/5', $router->getUrl('shop/admin/products/edit', ['id' => 5]));
+            $this->assertEquals($base . '/admin/shop/orders/delete/5', $router->getUrl('shop/admin/orders/delete', ['id' => 5]));
+            $this->assertEquals($base . '/admin/shop/coupons/edit/10', $router->getUrl('shop/admin/coupons/edit', ['id' => 10]));
+
             // '^/events/(\w+)/(\w+)/(\d+)' => 'events/$2/$1|id=$3'
             $this->assertEquals($base . '/events/edit/user/5', $router->getUrl('events/user/edit', ['id' => 5]));
 
@@ -137,6 +154,15 @@ class RouterTest extends TestCase
 
             // '^/(\w+)/(\w+)/(\w+)' => '$1/$2/$3'
             $this->assertEquals($base . '/site/index/index/?slug=test&unknown=category', $router->getUrl('site/index/index', ['slug' => 'test', 'unknown' => 'category']));
+
+            // '^/(\w+)/(\w+)/(\w+)/(\w+)' => '$1/$2/$3/$4'
+            $this->assertEquals($base . '/test/sub/test/index', $router->getUrl('test/sub/test/index'));
+
+            // '^/(\w+)/(\w+)/(\w+)/(\w+)' => '$1/$2/$3/$4'
+            $this->assertEquals($base . '/test/sub/test/index/?id=5', $router->getUrl('test/sub/test/index', ['id' => 5]));
+
+            // '^/(\w+)/(\w+)/(\w+)/(\w+)/(\w+)' => '$1/$2/$3/$4/$5'
+            $this->assertEquals($base . '/test/sub/til/test/index', $router->getUrl('test/sub/til/test/index'));
         }
     }
 

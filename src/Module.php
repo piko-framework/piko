@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace piko;
 
 use ReflectionClass;
+use RuntimeException;
 
 /**
  * Module is the base class for classes containing module logic.
@@ -40,6 +41,13 @@ abstract class Module extends Component
      * @var string
      */
     public $controllerNamespace;
+
+    /**
+     * Sub modules configuration
+     *
+     * @var array
+     */
+    public $modules = [];
 
     /**
      * The layout directory of the module.
@@ -74,6 +82,22 @@ abstract class Module extends Component
                 $this->controllerNamespace = substr($class, 0, $pos) . '\\controllers';
             }
         }
+    }
+
+    /**
+     * Get a sub module of this module
+     *
+     * @param string $moduleId The module identifier
+     * @throws RuntimeException If module not found
+     * @return Module
+     */
+    public function getModule($moduleId): Module
+    {
+        if (!isset($this->modules[$moduleId])) {
+            throw new RuntimeException("Configuration not found for sub module {$moduleId}.");
+        }
+
+        return Piko::createObject($this->modules[$moduleId]);
     }
 
     /**

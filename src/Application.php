@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace piko;
 
 use RuntimeException;
+use Throwable;
 
 /**
  * The Web application class
@@ -27,7 +28,7 @@ class Application extends Component
     public $basePath = '';
 
     /**
-     * List of modules that should be run during the application bootstrapping process.
+     * List of module IDs that should be run during the application bootstrapping process.
      *
      * Each module may be specified with a module ID as specified via [[modules]].
      *
@@ -150,29 +151,20 @@ class Application extends Component
         }
 
         $this->trigger('beforeRoute');
-
-        $router = $this->getRouter();
-
-        $route = $router->resolve();
-
+        $route = $this->getRouter()->resolve();
         $this->trigger('afterRoute', [&$route]);
 
         try {
 
-            if (empty($route)) {
-                throw new HttpException('Not found', 404);
-            }
-
             echo $this->dispatch($route);
 
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
 
-            if (empty($this->errorRoute)) {
+            if ($this->errorRoute === '') {
                 throw $e;
             }
 
             Piko::set('exception', $e);
-
             echo $this->dispatch($this->errorRoute);
         }
     }
@@ -182,6 +174,7 @@ class Application extends Component
      *
      * @param string $route The route to dispatch. The route format is one of the following :
      * ```
+     * '{moduleId}/{subModuleId}/.../{controllerId}/{actionId}'
      * '{moduleId}/{controllerId}/{actionId}'
      * '{moduleId}/{controllerId}'
      * '{moduleId}'
@@ -193,14 +186,22 @@ class Application extends Component
     {
         $parts = explode('/', trim($route, '/'));
 
-        if (!isset($parts[0])) {
-            throw new RuntimeException("Module not found in the route $route.");
+        if (!count($parts)) {
+            throw new HttpException('Route not defined', 500);
         }
 
-        $moduleId = $parts[0];
-        $controllerId = isset($parts[1])? $parts[1] : null;
-        $actionId = isset($parts[2])? $parts[2] : null;
+        $moduleId = array_shift($parts);
+        $actionId = array_pop($parts) ?? 'index';
+        $controllerId = array_pop($parts) ?? 'index';
+
         $module = $this->getModule($moduleId);
+
+        // In case of sub module
+        while ($parts) {
+            $moduleId = array_shift($parts);
+            $module = $module->getModule($moduleId);
+        }
+
         $module->id = $moduleId;
         $this->trigger('beforeRender', [&$module, $controllerId, $actionId]);
         $output = $module->run($controllerId, $actionId);
