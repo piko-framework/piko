@@ -9,7 +9,7 @@ class TestController extends \piko\Controller
 
     public function indexAction()
     {
-        return 'index Action';
+        return 'TestModule::TestController::indexAction';
     }
 
     public function errorAction()
@@ -25,7 +25,7 @@ class TestController extends \piko\Controller
     {
         $this->layout = 'main';
 
-        return 'index2 Action';
+        return 'TestModule::TestController::index2Action';
     }
 
     public function index3Action()

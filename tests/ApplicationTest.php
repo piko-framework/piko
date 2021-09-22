@@ -9,6 +9,34 @@ use piko\View;
 
 class ApplicationTest extends TestCase
 {
+    const CONFIG = [
+        'basePath' => __DIR__,
+        'errorRoute' => 'test/test/error',
+        'components' => [
+            'router' => [
+                'class' => 'piko\Router',
+                'routes' => [
+                    '^/$' => 'test/test/index',
+                    '^/user/(\d+)' => 'test/test/index3|id=$1',
+                    '^/test/sub/til/(\w+)/(\w+)' => 'test/sub/til/$1/$2',
+                    '^/test/sub/(\w+)/(\w+)' => 'test/sub/$1/$2',
+                    '^/(\w+)/(\w+)/(\w+)$' => '$1/$2/$3',
+                ],
+            ]
+        ],
+        'modules' => [
+            'test' => 'tests\modules\test\TestModule',
+        ],
+        'bootstrap' => ['test'],
+    ];
+
+    protected function setUp(): void
+    {
+        $_SERVER['SCRIPT_NAME'] = '';
+        $_SERVER['SCRIPT_FILENAME'] = '';
+        $_SERVER['DOCUMENT_ROOT'] = '';
+    }
+
     protected function tearDown(): void
     {
         Piko::reset();
@@ -31,169 +59,90 @@ class ApplicationTest extends TestCase
         $app->run();
     }
 
-    public function testRun()
+    public function testDefaultRun()
     {
-        $config = [
-            'basePath' => __DIR__,
-            'components' => [
-                'router' => [
-                    'class' => 'piko\Router',
-                    'routes' => [
-                        '^/$' => 'test/test/index',
-                        '^/user/(\d+)' => 'test/test/index3|id=$1',
-                        '^/test/sub/til/(\w+)/(\w+)' => 'test/sub/til/$1/$2',
-                        '^/test/sub/(\w+)/(\w+)' => 'test/sub/$1/$2',
-                        '^/(\w+)/(\w+)/(\w+)' => '$1/$2/$3'
-                    ],
-                ]
-            ],
-            'modules' => [
-                'test' => 'tests\modules\test\TestModule',
-            ],
-            'bootstrap' => ['test'],
-        ];
-
-        $_SERVER['SCRIPT_NAME'] = '';
-        $_SERVER['SCRIPT_FILENAME'] = '';
-        $_SERVER['DOCUMENT_ROOT'] = '';
-
-        new Application($config);
-
+        $this->expectOutputString('TestModule::TestController::indexAction');
         $_SERVER['REQUEST_URI'] = '/';
+        (new Application(self::CONFIG))->run();
+    }
 
-        ob_start();
-        Piko::$app->run();
-        $this->assertEquals('index Action', ob_get_clean());
+    public function testModuleBootstrap()
+    {
+        $_SERVER['REQUEST_URI'] = '/';
+        (new Application(self::CONFIG))->run();
 
-        // Test if TestModule::bootstrap() has been called
-        $this->assertEquals(Piko::get('TestModule::bootstrap'), true);
+        // Check if TestModule::bootstrap() has been called
+        $this->assertTrue(Piko::get('TestModule::bootstrap'));
+    }
 
+    public function testRunWithUriParameter()
+    {
+        $this->expectOutputString('55');
         $_SERVER['REQUEST_URI'] = '/user/55';
+        (new Application(self::CONFIG))->run();
+    }
 
-        ob_start();
-        Piko::$app->run();
-        $this->assertEquals('55', ob_get_clean());
-
+    public function testRunWithSubModule()
+    {
+        $this->expectOutputString('TestModule::SubModule::TestController::indexAction');
         $_SERVER['REQUEST_URI'] = '/test/sub/test/index';
+        (new Application(self::CONFIG))->run();
+    }
 
-        ob_start();
-        Piko::$app->run();
-        $this->assertEquals('TestModule::SubModule::TestController::indexAction', ob_get_clean());
-
+    public function testRunWithSubSubModule()
+    {
+        $this->expectOutputString('TestModule::SubModule::SubtilModule::TestController::indexAction');
         $_SERVER['REQUEST_URI'] = '/test/sub/til/test/index';
-
-        ob_start();
-        Piko::$app->run();
-        $this->assertEquals('TestModule::SubModule::SubtilModule::TestController::indexAction',  ob_get_clean());
+        (new Application(self::CONFIG))->run();
     }
 
     public function testErrorRoute()
     {
-        $config = [
-            'errorRoute' => 'test/test/error',
-            'modules' => [
-                'test' => 'tests\modules\test\TestModule'
-            ]
-        ];
-
-        $_SERVER['REQUEST_URI'] = '/';
-
-        $app = new Application($config);
-
-        ob_start();
-        $app->run();
-        $output = ob_get_clean();
-
-        $this->assertEquals('Route not defined', $output);
+        $this->expectOutputString('Route not defined');
+        $_SERVER['REQUEST_URI'] = '/forum';
+        (new Application(self::CONFIG))->run();
     }
 
     public function testDefaultLayout()
     {
-        $config = [
-            'basePath' => __DIR__,
-            'components' => [
-                'router' => [
-                    'class' => 'piko\Router',
-                    'routes' => [
-                        '^/$' => 'test/test/index2',
-                    ],
-                ]
-            ],
-            'modules' => [
-                'test' => 'tests\modules\test\TestModule'
-            ]
-        ];
+        $this->expectOutputRegex('~<!DOCTYPE html>~');
+        $this->expectOutputRegex('~TestModule::TestController::index2Action~');
 
-        $_SERVER['REQUEST_URI'] = '/';
-
-        $app = new Application($config);
-
-        ob_start();
-        $app->run();
-        $output = ob_get_clean();
-
-        $this->assertMatchesRegularExpression('~<!DOCTYPE html>~', $output);
-        $this->assertMatchesRegularExpression('~index2 Action~', $output);
+        $_SERVER['REQUEST_URI'] = 'test/test/index2';
+        (new Application(self::CONFIG))->run();
     }
 
     public function testUndeclaredModule()
     {
-        $config = [
-            'components' => [
-                'router' => [
-                    'class' => 'piko\Router',
-                    'routes' => [
-                        '^/$' => 'blog/index/index',
-                    ],
-                ]
-            ],
-        ];
-
-        $_SERVER['REQUEST_URI'] = '/';
-
-        $app = new Application($config);
-
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Configuration not found for module blog.');
-
-        $app->run();
+        $this->expectOutputString('Configuration not found for module blog.');
+        $_SERVER['REQUEST_URI'] = 'blog/index/index';
+        (new Application(self::CONFIG))->run();
     }
 
     public function testIncompleteRoutes()
     {
-        $config = [
-            'modules' => [
-                'test' => [
-                    'class' => 'tests\modules\test\TestModule',
-                    'controllerMap' => [
-                        'index' => 'tests\modules\test\controllers\TestController'
-                    ]
-                ]
-            ]
-        ];
+        $app = new Application(self::CONFIG);
 
-        $app = new Application($config);
-        $output = $app->dispatch('test/index'); // Internal route should be test/index/index
-        $this->assertEquals('index Action', $output);
+        // Internal route should be test/test/index
+        $this->assertEquals('TestModule::TestController::indexAction', $app->dispatch('test/test'));
 
-        $output = $app->dispatch('test'); // Internal route should be test/index/index
-        $this->assertEquals('index Action', $output);
+        // Internal route should be test/index/index
+        $this->assertEquals('TestModule::IndexController::indexAction', $app->dispatch('test'));
     }
 
-    public function testSubmoduleRoute()
+    public function testSubmoduleRoutes()
     {
-        $config = [
-            'modules' => [
-                'test' => 'tests\modules\test\TestModule'
-            ]
-        ];
+        $app = new Application(self::CONFIG);
 
-        $app = new Application($config);
-        $output = $app->dispatch('test/sub/test/index');
-        $this->assertEquals('TestModule::SubModule::TestController::indexAction', $output);
+        $this->assertEquals(
+            'TestModule::SubModule::TestController::indexAction',
+            $app->dispatch('test/sub/test/index')
+        );
 
-        $output = $app->dispatch('test/sub/til/test/index');
-        $this->assertEquals('TestModule::SubModule::SubtilModule::TestController::indexAction', $output);
+        $this->assertEquals(
+            'TestModule::SubModule::SubtilModule::TestController::indexAction',
+            $app->dispatch('test/sub/til/test/index')
+        );
     }
 
     /**
@@ -202,24 +151,10 @@ class ApplicationTest extends TestCase
      */
     public function testHeaders()
     {
-        $config = [
-            'components' => [
-                'router' => [
-                    'class' => 'piko\Router',
-                    'routes' => [
-                        '^/$' => 'test/test/index',
-                    ],
-                ]
-            ],
-            'modules' => [
-                'test' => 'tests\modules\test\TestModule'
-            ]
-        ];
-
         $_SERVER['REQUEST_URI'] = '/';
 
-        $app = new Application($config);
-        $app->setHeader('Location: /test');
+        $app = new Application(self::CONFIG);
+        $app->setHeader('Location', '/test');
         $app->setHeader(' Content-Type :application/json ');
 
         $app->run();
