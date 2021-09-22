@@ -52,7 +52,7 @@ class View extends Component
      *
      * @var string
      */
-    public $title;
+    public $title = '';
 
     /**
      * The registered CSS code blocks.
@@ -131,6 +131,13 @@ class View extends Component
      * @var array
      */
     public $themeMap = [];
+
+    /**
+     * The charset encoding used in the view.
+     *
+     * @var string
+     */
+    public $charset = 'UTF-8';
 
     /**
      * Assemble html in the head position.
@@ -256,9 +263,9 @@ class View extends Component
      * @param string $string Dirty html.
      * @return string Clean html.
      */
-    public function escape(?string $string): string
+    public function escape(string $string): string
     {
-        return $string === null ? '' : htmlentities($string, ENT_COMPAT | ENT_HTML5, Piko::$app->charset);
+        return htmlentities($string, ENT_COMPAT | ENT_HTML5, $this->charset);
     }
 
     /**
