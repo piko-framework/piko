@@ -2,51 +2,62 @@
 use PHPUnit\Framework\TestCase;
 
 use piko\Piko;
-use piko\AssetBundle;
+use tests\modules\test\TestAssets;
+use tests\modules\test\WrongAssets;
 use piko\View;
-
-class TestBundle extends AssetBundle
-{
-    public $name = 'test';
-    public $sourcePath =  __DIR__ . '/testBundle/sources';
-    public $js = ['test.js', 'http://domain.com/js/test.js'];
-    public $css = ['test.css', 'http://domain.com/css/test.css'];
-}
 
 class AssetBundleTest extends TestCase
 {
-    protected $testDir = __DIR__ . '/testBundle';
+    const PUBLIC_DIR = __DIR__ . '/www';
 
-    protected function setUp(): void
+    public static function setUpBeforeClass(): void
     {
-        mkdir($this->testDir);
-        mkdir($this->testDir . '/sources');
-        mkdir($this->testDir . '/public');
-        file_put_contents($this->testDir . '/sources/test.css', '');
-        file_put_contents($this->testDir . '/sources/test.js', '');
-        file_put_contents($this->testDir . '/test.php', '<?php echo $this->head(); echo $this->endBody(); ?>');
+        mkdir(static::PUBLIC_DIR);
+        Piko::setAlias('@webroot', static::PUBLIC_DIR);
+        Piko::setAlias('@web', '');
     }
 
-    protected function tearDown(): void
+    public static function tearDownAfterClass(): void
     {
-        exec('rm -rf ' . $this->testDir);
+        exec('rm -rf ' . static::PUBLIC_DIR);
     }
 
     public function testBundle()
     {
-        Piko::setAlias('@webroot', $this->testDir . '/public');
-        Piko::setAlias('@web', '');
-        $view = new View;
-        TestBundle::register($view);
-        $output = $view->render($this->testDir . '/test.php');
+        $view = new View();
 
-        $this->assertDirectoryExists($this->testDir . '/public/assets/test');
-        $this->assertFileExists($this->testDir . '/public/assets/test/test.css');
-        $this->assertFileExists($this->testDir . '/public/assets/test/test.js');
+        $bundle = TestAssets::register($view);
+        $this->assertEquals(1, $bundle->registrationCount);
 
-        $this->assertMatchesRegularExpression('`<link href="/assets/test/test.css" rel="stylesheet">`', $output);
+        // Check if bundle is registered once
+        $bundle = TestAssets::register($view);
+        $this->assertEquals(1, $bundle->registrationCount);
+
+        $output = $view->render(__DIR__ . '/layouts/main.php', ['content' => '']);
+
+        $this->assertDirectoryExists(self::PUBLIC_DIR . '/assets/test-parent');
+        $this->assertDirectoryExists(self::PUBLIC_DIR . '/assets/test');
+        $this->assertDirectoryExists(self::PUBLIC_DIR . '/assets/test-parent/css');
+        $this->assertDirectoryExists(self::PUBLIC_DIR . '/assets/test/css');
+        $this->assertFileExists(self::PUBLIC_DIR . '/assets/test-parent/css/parent.css');
+        $this->assertFileExists(self::PUBLIC_DIR . '/assets/test/css/test.css');
+        $this->assertFileExists(self::PUBLIC_DIR . '/assets/test-parent/parent.js');
+        $this->assertFileExists(self::PUBLIC_DIR . '/assets/test/test.js');
+
+        $this->assertMatchesRegularExpression('`<link href="/assets/test-parent/css/parent.css" rel="stylesheet">`', $output);
+        $this->assertMatchesRegularExpression('`<link href="/assets/test/css/test.css" rel="stylesheet">`', $output);
+        $this->assertMatchesRegularExpression('`<script src="/assets/test-parent/parent.js"></script>`', $output);
         $this->assertMatchesRegularExpression('`<script src="/assets/test/test.js"></script>`', $output);
         $this->assertMatchesRegularExpression('`<link href="http://domain.com/css/test.css" rel="stylesheet">`', $output);
         $this->assertMatchesRegularExpression('`<script src="http://domain.com/js/test.js"></script>`', $output);
+    }
+
+    public function testBundleWithWrongPath()
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Src: ' . (new WrongAssets())->sourcePath . ' does not exists.');
+
+        $view = new View();
+        WrongAssets::register($view);
     }
 }

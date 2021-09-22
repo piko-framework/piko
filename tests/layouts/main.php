@@ -4,12 +4,11 @@
 
 use piko\Piko;
 
-$app = Piko::$app;
 ?>
 <!DOCTYPE html>
-<html lang="<?= $app->language ?>">
+<html>
   <head>
-    <meta charset="<?= $app->charset ?>">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= $this->escape($this->title) ?></title>
     <?= $this->head() ?>
