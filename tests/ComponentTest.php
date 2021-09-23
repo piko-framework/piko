@@ -1,10 +1,6 @@
 <?php
 use PHPUnit\Framework\TestCase;
-use piko\Component;
-
-class TestComponent extends Component
-{
-}
+use tests\modules\test\TestComponent;
 
 class ComponentTest extends TestCase
 {
@@ -30,7 +26,7 @@ class ComponentTest extends TestCase
             return $a + $b + $c;
         });
 
-        \piko\Component::when('test', function ($a, $b, $c) {
+        TestComponent::when('test', function ($a, $b, $c) {
             $this->assertEquals(1, $a);
             $this->assertEquals(2, $b);
             $this->assertEquals(3, $c);
@@ -38,10 +34,10 @@ class ComponentTest extends TestCase
         });
 
         // Test registering a method
-        $component->on('test', [$this, 'onTestEvent2']);
+        TestComponent::when('test', [$this, 'onTestEvent2'], 'before');
 
         // Test registering a static method
-        $component->on('test', 'ComponentTest::onTestEvent3');
+        $component->on('test', 'ComponentTest::onTestEvent3', 'before');
 
         $result = $component->trigger('test', [1, 2, 3]);
 
@@ -68,5 +64,12 @@ class ComponentTest extends TestCase
         });
 
         $this->assertEquals(12, $component->sum(10, 2));
+
+        $component->detachBehavior('sum');
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Behavior sum not registered.');
+
+        $component->sum(10, 2);
     }
 }
