@@ -42,6 +42,17 @@ class ApplicationTest extends TestCase
         Piko::reset();
     }
 
+    public function testAlias()
+    {
+        new Application(self::CONFIG);
+
+        $this->assertEquals(__DIR__, Piko::getAlias('@app'));
+        $this->assertFalse(Piko::getAlias('@test'));
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Alias must start with the @ character');
+        Piko::setAlias('#test', __DIR__);
+    }
+
     public function testRunWithEmptyConfiguration()
     {
         $_SERVER['REQUEST_URI'] = '/';
