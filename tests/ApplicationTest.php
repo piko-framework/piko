@@ -90,11 +90,16 @@ class ApplicationTest extends TestCase
         (new Application(self::CONFIG))->run();
     }
 
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testErrorRoute()
     {
         $this->expectOutputString('Route not defined');
         $_SERVER['REQUEST_URI'] = '/forum';
         (new Application(self::CONFIG))->run();
+        $this->assertContains('HTTP/1.1 500 Route not defined', Piko::$app->headers);
     }
 
     public function testDefaultLayout()
@@ -155,7 +160,9 @@ class ApplicationTest extends TestCase
         $app->run();
         ob_end_clean();
 
-        $this->assertContains('Location:/test', xdebug_get_headers());
-        $this->assertContains('Content-Type:application/json', xdebug_get_headers());
+        $headers = xdebug_get_headers();
+
+        $this->assertContains('Location: /test', $headers);
+        $this->assertContains('Content-Type: application/json', $headers);
     }
 }

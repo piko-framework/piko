@@ -252,8 +252,8 @@ class Application extends Component
 
         $this->trigger('afterRender', [&$module, &$output, &$this->headers]);
 
-        foreach ($this->headers as $header => $value) {
-            header($header . ':' . $value);
+        foreach ($this->headers as $header) {
+            header($header);
         }
 
         return $output;
@@ -268,11 +268,11 @@ class Application extends Component
     public function setHeader(string $header, string $value = null) : void
     {
         if (($pos = strpos($header, ':')) !== false) {
-            $value = trim(substr($header, $pos+1));
-            $header = trim(substr($header, 0, $pos));
+            $value = substr($header, $pos +1);
+            $header = substr($header, 0, $pos);
         }
 
-        $this->headers[$header] = $value;
+        $this->headers[] = trim($header) . ': ' . trim($value);
     }
 
     /**

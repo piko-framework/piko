@@ -61,8 +61,7 @@ class ControllerTest extends TestCase
     public function testRedirectUsingGetUrl()
     {
         $this->controller->runAction('goHome');
-        $this->assertArrayHasKey('Location', Piko::$app->headers);
-        $this->assertEquals('/', Piko::$app->headers['Location']);
+        $this->assertContains('Location: /', Piko::$app->headers);
     }
 
     public function testForward()
@@ -74,8 +73,7 @@ class ControllerTest extends TestCase
     {
         $response = $this->controller->runAction('testJson');
         $this->assertFalse($this->controller->layout);
-        $this->assertArrayHasKey('Content-Type', Piko::$app->headers);
-        $this->assertEquals('application/json', Piko::$app->headers['Content-Type']);
+        $this->assertContains('Content-Type: application/json', Piko::$app->headers);
         $data = json_decode($response, true);
         $this->assertArrayHasKey('status', $data);
         $this->assertEquals('ok', $data['status']);

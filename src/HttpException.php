@@ -22,7 +22,7 @@ use Throwable;
 class HttpException extends Exception
 {
     /**
-     * Constructor sends http header if php SAPI != cli.
+     * Constructor set http header with response code and message if code is given
      *
      * @param string $message The exception message.
      * @param int $code The exception code (should be an HTTP status code, eg. 404)
@@ -32,9 +32,10 @@ class HttpException extends Exception
     {
         parent::__construct($message, $code, $previous);
 
-        if ($this->getCode() && php_sapi_name() != 'cli') {
-            $protocol = isset($_SERVER['SERVER_PROTOCOL'])? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0';
-            header($protocol . ' ' . $this->getCode() . ' ' . $this->getMessage());
+        if ($this->getCode()) {
+            $protocol = isset($_SERVER['SERVER_PROTOCOL'])? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.1';
+            $header = $protocol . ' ' . $this->getCode() . ' ' . $this->getMessage();
+            array_unshift(Piko::$app->headers, $header);
         }
     }
 }
