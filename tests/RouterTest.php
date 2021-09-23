@@ -33,9 +33,15 @@ class RouterTest extends TestCase
         Piko::set('router', $router);
     }
 
+    public static function tearDownAfterClass(): void
+    {
+       Piko::reset();
+    }
+
     public function testResolve()
     {
-        $router = Piko::$app->getRouter();
+        /* @var $router \piko\Router */
+        $router = Piko::get('router');
 
         $bases = ['', '/subdir'];
 
@@ -65,7 +71,7 @@ class RouterTest extends TestCase
             $this->assertEquals('page/default/view', $router->resolve());
             $this->assertEquals('page-3', $_GET['alias']);
 
-            $_SERVER['REQUEST_URI'] = $base . '/blog/default/index';
+            $_SERVER['REQUEST_URI'] = $base . '/blog/default/index?filter=perso';
             $this->assertEquals('blog/default/index', $router->resolve());
 
             $_SERVER['REQUEST_URI'] = $base . '/admin/user/edit/5';
@@ -101,7 +107,8 @@ class RouterTest extends TestCase
 
     public function testGetUrl()
     {
-        $router = Piko::$app->getRouter();
+        /* @var $router \piko\Router */
+        $router = Piko::get('router');
 
         $bases = ['', '/subdir'];
 
@@ -172,7 +179,9 @@ class RouterTest extends TestCase
         $_SERVER['HTTP_HOST'] = 'www.sphilip.com';
         Piko::setAlias('@web', '');
 
-        $router = Piko::$app->getRouter();
+        /* @var $router \piko\Router */
+        $router = Piko::get('router');
+
         // '^/user/(\d+)' => 'user/default/view|id=$1'
         $this->assertEquals('https://www.sphilip.com/user/2',  $router->getUrl('user/default/view', ['id' => 2], true));
     }
