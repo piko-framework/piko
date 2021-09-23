@@ -14,5 +14,23 @@ class ModuleTest extends TestCase
         $this->assertInstanceOf(SubModule::class, $subModule);
         $subtilModule = $subModule->getModule('til');
         $this->assertInstanceOf(SubtilModule::class, $subtilModule);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Configuration not found for sub module tal.');
+        $module->getModule('tal');
+    }
+
+    public function testRunWithCustomControllerMap()
+    {
+        $module = new TestModule([
+            'controllerMap' => [
+                'blog' => 'tests\modules\test\controllers\TestController'
+            ]
+        ]);
+
+        $this->assertEquals(
+            'TestModule::TestController::indexAction',
+            $module->run('blog', 'index')
+        );
     }
 }
