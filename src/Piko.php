@@ -174,11 +174,12 @@ class Piko
     {
         $i18n = static::get('i18n');
 
-        if ($i18n instanceof I18n) {
-            return $i18n->translate($domain, $text, $params);
+        if (!$i18n instanceof I18n) {
+            $i18n = new I18n();
+            static::set('i18n', $i18n);
         }
 
-        return $text;
+        return $i18n->translate($domain, $text, $params);
     }
 
     public static function reset(): void

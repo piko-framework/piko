@@ -9,6 +9,10 @@ class I18nTest extends TestCase
     {
         $_SERVER['SCRIPT_NAME'] = '';
         $_SERVER['SCRIPT_FILENAME'] = '';
+    }
+
+    protected function tearDown(): void
+    {
         Piko::reset();
     }
 
@@ -32,10 +36,9 @@ class I18nTest extends TestCase
         $this->assertEquals('Test de traduction', Piko::t('test', 'Translation test'));
         $this->assertEquals('Bonjour Toto', Piko::t('test', 'Hello {name}', ['name' => 'Toto']));
     }
-/*
+
     public function testAddTranslation()
     {
-        session_start();
         $config = [
             'basePath' => __DIR__,
             'language' => 'fr',
@@ -51,9 +54,13 @@ class I18nTest extends TestCase
         $i18n = Piko::get('i18n');
         $i18n->addTranslation('test', '@app/messages');
 
-        $message = Piko::t('test', 'Translation test');
-
-        $this->assertEquals('Test de traduction', $message);
+        $this->assertEquals('Test de traduction', Piko::t('test', 'Translation test'));
+        $this->assertEquals('Bonjour Toto', Piko::t('test', 'Hello {name}', ['name' => 'Toto']));
     }
-*/
+
+    public function testUnregisteredTranslation()
+    {
+        $this->assertEquals('Translation test', Piko::t('test', 'Translation test'));
+        $this->assertEquals('Hello Toto', Piko::t('test', 'Hello {name}', ['name' => 'Toto']));
+    }
 }
