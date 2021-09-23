@@ -10,6 +10,9 @@ declare(strict_types=1);
 
 namespace piko;
 
+use ReflectionClass;
+use ReflectionProperty;
+
 /**
  * Base model class.
  *
@@ -18,57 +21,32 @@ namespace piko;
 abstract class Model extends Component
 {
     /**
-     * Represents the model's data.
+     * Errors hash container
      *
      * @var array
      */
-    protected $data = [];
+    protected $errors = [];
 
     /**
-     * Magick method to access model's data as class attribute.
+     * Get the public properties reprenting the data model
      *
-     * @param string $attribute The attribute's name.
-     * @return mixed The attribute's value.
+     * @return array
      */
-    public function __get($attribute)
+    protected function getAttributes()
     {
-        return isset($this->data[$attribute]) ? $this->data[$attribute] : null;
-    }
+        $class = get_called_class();
+        $reflection = new ReflectionClass($class);
+        $properties = $reflection->getProperties(ReflectionProperty::IS_PUBLIC);
+        $attributes = [];
 
-    /**
-     * Magick method to set model's data as class attribute.
-     *
-     * @param string $attribute The attribute's name.
-     * @param mixed $value The attribute's value.
-     * @return void
-     */
-    public function __set($attribute, $value)
-    {
-        $this->data[$attribute] = $value;
-    }
-
-    /**
-     * Magick method to check if attribute is defined in model's data.
-     *
-     * @param string $attribute The attribute's name.
-     * @return boolean
-     */
-    public function __isset($attribute)
-    {
-        return isset($this->data[$attribute]);
-    }
-
-    /**
-     * Magick method to unset attribute in model's data.
-     *
-     * @param string $attribute The attribute's name.
-     * @return void
-     */
-    public function __unset($attribute)
-    {
-        if (isset($this->data[$attribute])) {
-            unset($this->data[$attribute]);
+        foreach ($properties as $property) {
+            /* @var $property ReflectionProperty */
+            if ($property->class === $class) {
+                $attributes[$property->name] = $property->getValue($this);
+            }
         }
+
+        return $attributes;
     }
 
     /**
@@ -79,9 +57,11 @@ abstract class Model extends Component
      */
     public function bind(array $data): void
     {
+        $attributes = $this->getAttributes();
+
         foreach ($data as $key => $value) {
-            if (array_key_exists($key, $this->data)) {
-                $this->data[$key] = $value;
+            if (isset($attributes[$key])) {
+                $this->$key = $value;
             }
         }
     }
@@ -93,16 +73,32 @@ abstract class Model extends Component
      */
     public function toArray(): array
     {
-        return $this->data;
+        return $this->getAttributes();
+    }
+
+    /**
+     * Return the errors hash container
+     *
+     * @return array
+     */
+    public function getErrors()
+    {
+        return $this->errors;
     }
 
     /**
      * Validate this model (Should be extended)
      *
-     * @return boolean
+     * @return void
      */
-    public function validate(): bool
+    protected function validate(): void
     {
-        return true;
+    }
+
+    public function isValid()
+    {
+        $this->validate();
+
+        return empty($this->errors);
     }
 }
