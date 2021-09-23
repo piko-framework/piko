@@ -18,13 +18,6 @@ namespace piko;
 class I18n extends Component
 {
     /**
-     * A key / values pairs of domain / path
-     *
-     * @var array
-     */
-    public $translations = [];
-
-    /**
      * Messages container by domain
      *
      * @var array
@@ -32,14 +25,32 @@ class I18n extends Component
     protected $messages = [];
 
     /**
-     * {@inheritDoc}
-     * @see \piko\Component::init()
+     * Constructor
+     *
+     * $config argument should contains the key translations giving
+     * a key / values pairs of domain / path.
+     *
+     * Example :
+     *
+     * ```php
+     * [
+     *   'translations' => [
+     *     'domain' => '@app/messages'
+     *   ]
+       ]
+       ```
+     *
+     * @param array $config
      */
-    protected function init(): void
+    public function __construct(array $config = [])
     {
-        foreach ($this->translations as $domain => $path) {
-            $this->addTranslation($domain, $path);
+        if (isset($config['translations'])) {
+            foreach ($config['translations'] as $domain => $path) {
+                $this->addTranslation($domain, $path);
+            }
         }
+
+        parent::__construct($config);
     }
 
     /**

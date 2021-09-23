@@ -1,13 +1,18 @@
 <?php
 use PHPUnit\Framework\TestCase;
-
-use piko\Piko;
 use piko\Application;
+use piko\Piko;
 
 class I18nTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        $_SERVER['SCRIPT_NAME'] = '';
+        $_SERVER['SCRIPT_FILENAME'] = '';
+        Piko::reset();
+    }
 
-    public function TestI18nApplication()
+    public function testWithConfig()
     {
         $config = [
             'basePath' => __DIR__,
@@ -22,16 +27,12 @@ class I18nTest extends TestCase
             ],
         ];
 
-        $_SERVER['SCRIPT_NAME'] = '';
-        $_SERVER['SCRIPT_FILENAME'] = '';
-
         new Application($config);
 
-        $message = Piko::t('test', 'Translation test');
-
-        $this->assertEquals('Test de traduction', $message);
+        $this->assertEquals('Test de traduction', Piko::t('test', 'Translation test'));
+        $this->assertEquals('Bonjour Toto', Piko::t('test', 'Hello {name}', ['name' => 'Toto']));
     }
-
+/*
     public function testAddTranslation()
     {
         session_start();
@@ -45,9 +46,6 @@ class I18nTest extends TestCase
             ]
         ];
 
-        $_SERVER['SCRIPT_NAME'] = '';
-        $_SERVER['SCRIPT_FILENAME'] = '';
-
         new Application($config);
 
         $i18n = Piko::get('i18n');
@@ -57,4 +55,5 @@ class I18nTest extends TestCase
 
         $this->assertEquals('Test de traduction', $message);
     }
+*/
 }
