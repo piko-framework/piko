@@ -64,12 +64,6 @@ class ApplicationTest extends TestCase
         $this->expectOutputString('TestModule::TestController::indexAction');
         $_SERVER['REQUEST_URI'] = '/';
         (new Application(self::CONFIG))->run();
-    }
-
-    public function testModuleBootstrap()
-    {
-        $_SERVER['REQUEST_URI'] = '/';
-        (new Application(self::CONFIG))->run();
 
         // Check if TestModule::bootstrap() has been called
         $this->assertTrue(Piko::get('TestModule::bootstrap'));
@@ -157,7 +151,9 @@ class ApplicationTest extends TestCase
         $app->setHeader('Location', '/test');
         $app->setHeader(' Content-Type :application/json ');
 
+        ob_start();
         $app->run();
+        ob_end_clean();
 
         $this->assertContains('Location:/test', xdebug_get_headers());
         $this->assertContains('Content-Type:application/json', xdebug_get_headers());
