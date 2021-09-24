@@ -1,8 +1,7 @@
 /.buildpath
 /.project
 /.settings
-/report
+/coverage
 /vendor
-/build
 /composer.lock
 /.phpunit.result.cache
