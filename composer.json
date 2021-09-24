@@ -30,8 +30,6 @@
 		"squizlabs/php_codesniffer" : "^3.5"
 	},
 	"scripts" : {
-		"tests" : "phpunit",
-		"coding-standard" : "phpcs --standard=./coding-standard  --extensions=php --ignore=./vendor .",
-		"coding-standard-fix" : "phpcbf --standard=./coding-standard  --extensions=php --ignore=./vendor ."
+		"tests" : "phpunit"
 	}
 }
