@@ -296,16 +296,6 @@ class Application extends Component
     }
 
     /**
-     * Get the application user instance
-     *
-     * @return User instance
-     */
-    public function getUser(): ?User
-    {
-        return Piko::get('user');
-    }
-
-    /**
      * Get a module instance
      *
      * @param string $moduleId The module identifier
