@@ -1,7 +1,7 @@
 <?php
-namespace tests;
+namespace tests\modules\test\models;
 
-class UserIdentity implements \piko\IdentityInterface
+class User extends \piko\Model implements \piko\IdentityInterface
 {
     private static $users = [
         1 => 'sylvain',

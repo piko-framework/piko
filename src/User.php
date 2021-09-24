@@ -68,7 +68,7 @@ class User extends Component
     protected function init(): void
     {
         if (!empty($this->authTimeout)) {
-            ini_set('session.gc_maxlifetime', $this->authTimeout);
+            ini_set('session.gc_maxlifetime', (string) $this->authTimeout);
         }
 
         if (!empty($this->accessCheckerClass)) {
@@ -116,10 +116,6 @@ class User extends Component
      */
     public function setIdentity(IdentityInterface $identity): void
     {
-        if (!$identity instanceof IdentityInterface) {
-            throw new RuntimeException('The identity instance of IdentityInterface');
-        }
-
         $this->identity = $identity;
         $this->access = [];
     }
