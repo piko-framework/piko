@@ -1,6 +1,7 @@
 # Piko
 
-![Tests](https://github.com/piko-framework/piko/actions/workflows/php.yml/badge.svg)
+[![build](https://github.com/piko-framework/piko/actions/workflows/php.yml/badge.svg)](https://github.com/piko-framework/piko/actions/workflows/php.yml)
+[![Coverage Status](https://coveralls.io/repos/github/piko-framework/piko/badge.svg?branch=master)](https://coveralls.io/github/piko-framework/piko?branch=master)
 
 Piko is Web micro Framework to build [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller)
 applications.
