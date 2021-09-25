@@ -38,7 +38,7 @@ class ControllerTest extends TestCase
         $this->controller = new IndexController([
             'id' => 'index',
             'layout' => false,
-            'module' => Piko::$app->getModule('test'),
+            'module' => Application::$instance->getModule('test'),
         ]);
     }
 
@@ -61,7 +61,7 @@ class ControllerTest extends TestCase
     public function testRedirectUsingGetUrl()
     {
         $this->controller->runAction('goHome');
-        $this->assertContains('Location: /', Piko::$app->headers);
+        $this->assertContains('Location: /', Application::$instance->headers);
     }
 
     public function testForward()
@@ -73,7 +73,7 @@ class ControllerTest extends TestCase
     {
         $response = $this->controller->runAction('testJson');
         $this->assertFalse($this->controller->layout);
-        $this->assertContains('Content-Type: application/json', Piko::$app->headers);
+        $this->assertContains('Content-Type: application/json', Application::getInstance()->headers);
         $data = json_decode($response, true);
         $this->assertArrayHasKey('status', $data);
         $this->assertEquals('ok', $data['status']);

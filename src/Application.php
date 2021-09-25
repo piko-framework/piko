@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Piko - Web micro framework
  *
@@ -6,6 +7,7 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/piko-framework/piko
  */
+
 declare(strict_types=1);
 
 namespace piko;
@@ -50,7 +52,7 @@ class Application extends Component
      * ]
      * ```
      *
-     * @var array
+     * @var array<mixed>
      * @see Module To have more informations on module attributes
      */
     public $modules = [];
@@ -63,7 +65,7 @@ class Application extends Component
      * During the bootstrapping process, each module will be instantiated. If the module class
      * implements the bootstrap() method, this method will be also be called.
      *
-     * @var array
+     * @var array<string>
      */
     public $bootstrap = [];
 
@@ -77,7 +79,7 @@ class Application extends Component
     /**
      * The configuration loaded on application instantiation.
      *
-     * @var array
+     * @var array<mixed>
      */
     public $config = [];
 
@@ -114,14 +116,21 @@ class Application extends Component
     /**
      * The response headers.
      *
-     * @var array
+     * @var array<string>
      */
     public $headers = [];
 
     /**
+     * Application Instance
+     *
+     * @var Application
+     */
+    public static $instance;
+
+    /**
      * Constructor
      *
-     * @param array $config The application configuration.
+     * @param array<mixed> $config The application configuration.
      * @return void
      */
     public function __construct(array $config)
@@ -153,7 +162,7 @@ class Application extends Component
             }
         }
 
-        $baseUrl = isset($config['baseUrl'])? $config['baseUrl'] : rtrim(dirname($_SERVER['SCRIPT_NAME']), '\\/');
+        $baseUrl = isset($config['baseUrl']) ? $config['baseUrl'] : rtrim(dirname($_SERVER['SCRIPT_NAME']), '\\/');
 
         Piko::setAlias('@web', $baseUrl);
         Piko::setAlias('@webroot', dirname($_SERVER['SCRIPT_FILENAME']));
@@ -161,9 +170,19 @@ class Application extends Component
 
         $this->config = $config;
 
-        Piko::$app = $this;
+        static::$instance = $this;
 
         $this->trigger('init');
+    }
+
+    /**
+     * Get the application instance
+     *
+     * @return Application
+     */
+    public static function getInstance(): Application
+    {
+        return static::$instance;
     }
 
     /**
@@ -245,7 +264,7 @@ class Application extends Component
         if ($module->layout !== false) {
             $layout = $module->layout == null ? $this->defaultLayout : $module->layout;
             $view = $this->getView();
-            $path = empty($module->layoutPath)? $this->defaultLayoutPath : $module->layoutPath;
+            $path = empty($module->layoutPath) ? $this->defaultLayoutPath : $module->layoutPath;
             $view->paths[] = $path;
             $output = $view->render($layout, ['content' => $output]);
         }
@@ -265,10 +284,10 @@ class Application extends Component
      * @param string $header The complete header (key:value) or just the header key
      * @param string $value  (optional) The header value
      */
-    public function setHeader(string $header, string $value = null) : void
+    public function setHeader(string $header, string $value = ''): void
     {
         if (($pos = strpos($header, ':')) !== false) {
-            $value = substr($header, $pos +1);
+            $value = substr($header, $pos + 1);
             $header = substr($header, 0, $pos);
         }
 
@@ -309,6 +328,12 @@ class Application extends Component
             throw new RuntimeException("Configuration not found for module {$moduleId}.");
         }
 
-        return Piko::createObject($this->modules[$moduleId]);
+        $module = Piko::createObject($this->modules[$moduleId]);
+
+        if ($module instanceof Module) {
+            return $module;
+        }
+
+        throw new RuntimeException("module $moduleId must be instance of Module");
     }
 }

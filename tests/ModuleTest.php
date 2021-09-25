@@ -20,6 +20,14 @@ class ModuleTest extends TestCase
         $module->getModule('tal');
     }
 
+    public function testGetWrongModule()
+    {
+        $module = new TestModule();
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('module form must be instance of Module');
+        $module->getModule('form');
+    }
+
     public function testRunWithCustomControllerMap()
     {
         $module = new TestModule([

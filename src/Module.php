@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Piko - Web micro framework
  *
@@ -6,6 +7,7 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/piko-framework/piko
  */
+
 declare(strict_types=1);
 
 namespace piko;
@@ -30,7 +32,7 @@ abstract class Module extends Component
     /**
      * Mapping from controller ID to controller class.
      *
-     * @var array
+     * @var array<string>
      */
     public $controllerMap = [];
 
@@ -45,7 +47,7 @@ abstract class Module extends Component
     /**
      * Sub modules configuration
      *
-     * @var array
+     * @var array<mixed>
      */
     public $modules = [];
 
@@ -57,9 +59,10 @@ abstract class Module extends Component
     public $layoutPath;
 
     /**
-     * The name of the module's layout file.
+     * The name of the module's layout file or false
+     * to deactivate the layout rendering
      *
-     * @var string
+     * @var string|false
      */
     public $layout;
 
@@ -97,7 +100,13 @@ abstract class Module extends Component
             throw new RuntimeException("Configuration not found for sub module {$moduleId}.");
         }
 
-        return Piko::createObject($this->modules[$moduleId]);
+        $module = Piko::createObject($this->modules[$moduleId]);
+
+        if ($module instanceof Module) {
+            return $module;
+        }
+
+        throw new RuntimeException("module $moduleId must be instance of Module");
     }
 
     /**
@@ -109,7 +118,7 @@ abstract class Module extends Component
     {
         if ($this->basePath === null) {
             $class = new ReflectionClass($this);
-            $this->basePath = dirname($class->getFileName());
+            $this->basePath = dirname($class->getFileName()); // @phpstan-ignore-line
         }
 
         return $this->basePath;
@@ -127,11 +136,11 @@ abstract class Module extends Component
         $controllerName = str_replace(' ', '', ucwords(str_replace('-', ' ', $controllerId))) . 'Controller';
         $actionId = str_replace(' ', '', ucwords(str_replace('-', ' ', $actionId)));
 
-        $controllerClass = isset($this->controllerMap[$controllerId])?
+        $controllerClass = isset($this->controllerMap[$controllerId]) ?
                            $this->controllerMap[$controllerId] :
                            $this->controllerNamespace . '\\' . $controllerName;
 
-        $controller = new $controllerClass;
+        $controller = new $controllerClass();
         $controller->module = $this;
         $controller->id = $controllerId;
 

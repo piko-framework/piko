@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Piko - Web micro framework
  *
@@ -6,6 +7,7 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/piko-framework/piko
  */
+
 declare(strict_types=1);
 
 namespace piko;
@@ -14,6 +16,9 @@ use RuntimeException;
 
 /**
  * Controller is the base class for classes containing controller logic.
+ *
+ * @method string getUrl(string $route, array<mixed> $params, boolean $absolute) Convenient method to convert
+ * a route to an url (see Router::getUrl()). This method is implemented as a behavior and can be overriden.
  *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
@@ -51,6 +56,13 @@ abstract class Controller extends Component
      */
     public $module;
 
+    protected function init(): void
+    {
+        if (!isset($this->behaviors['getUrl'])) {
+            $this->behaviors['getUrl'] = [Application::getInstance()->getRouter(), 'getUrl'];
+        }
+    }
+
     /**
      * Runs an action within this controller with the specified action ID.
 
@@ -78,12 +90,12 @@ abstract class Controller extends Component
      * Render a view.
      *
      * @param string $viewName The view file name.
-     * @param array $data An array of data (name-value pairs) to transmit to the view.
+     * @param array<mixed> $data An array of data (name-value pairs) to transmit to the view.
      * @return string|null The view output.
      */
     protected function render(string $viewName, array $data = []): ?string
     {
-        $view = Piko::$app->getView();
+        $view = Application::getInstance()->getView();
         $view->paths[] = $this->getViewPath();
 
         return $view->render($viewName, $data);
@@ -96,7 +108,7 @@ abstract class Controller extends Component
      */
     protected function redirect(string $url): void
     {
-        Piko::$app->setHeader('Location', $url);
+        Application::getInstance()->setHeader('Location', $url);
     }
 
     /**
@@ -106,21 +118,7 @@ abstract class Controller extends Component
      */
     protected function forward(string $route): string
     {
-        return Piko::$app->dispatch($route);
-    }
-
-    /**
-     * Convenient method to convert a route to an url
-     *
-     * @param string $route The route to convert
-     * @param array $params The route params
-     * @param boolean $absolute Optional to have an absolute url.
-     * @return string
-     * @see Router::getUrl
-     */
-    protected function getUrl(string $route, array $params = [], bool $absolute = false): string
-    {
-        return Piko::$app->getRouter()->getUrl($route, $params, $absolute);
+        return Application::getInstance()->dispatch($route);
     }
 
     /**
@@ -147,8 +145,10 @@ abstract class Controller extends Component
      */
     protected function isAjax(): bool
     {
-        if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])
-            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+        if (
+            isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'
+        ) {
             return true;
         }
 
@@ -209,13 +209,17 @@ abstract class Controller extends Component
      * Get the raw input data of the request
      *
      * @param int $size The size in bytes of the raw input
-     * @return string
+     * @return string|false
      */
     protected function rawInput($size = 1024)
     {
         $handle = fopen('php://input', 'r');
-        $data = fread($handle, $size);
-        fclose($handle);
+        $data = false;
+
+        if (is_resource($handle)) {
+            $data = fread($handle, $size);
+            fclose($handle);
+        }
 
         return $data;
     }
@@ -224,12 +228,12 @@ abstract class Controller extends Component
      * Convenient method to return a JSON response
      *
      * @param mixed $data
-     * @return string
+     * @return string|false
      */
     protected function jsonResponse($data)
     {
         $this->layout = false;
-        Piko::$app->setHeader('Content-Type', 'application/json');
+        Application::getInstance()->setHeader('Content-Type', 'application/json');
 
         return json_encode($data);
     }

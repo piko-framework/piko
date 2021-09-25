@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Piko - Web micro framework
  *
@@ -6,6 +7,7 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/piko-framework/piko
  */
+
 declare(strict_types=1);
 
 namespace piko;
@@ -28,14 +30,14 @@ class HttpException extends Exception
      * @param int $code The exception code (should be an HTTP status code, eg. 404)
      * @param Throwable $previous A previous exception.
      */
-    public function __construct(string $message = null, int $code = null, Throwable $previous = null)
+    public function __construct(string $message = '', int $code = 404, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
 
         if ($this->getCode()) {
-            $protocol = isset($_SERVER['SERVER_PROTOCOL'])? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.1';
+            $protocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.1';
             $header = $protocol . ' ' . $this->getCode() . ' ' . $this->getMessage();
-            array_unshift(Piko::$app->headers, $header);
+            array_unshift(Application::$instance->headers, $header);
         }
     }
 }

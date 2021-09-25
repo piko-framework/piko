@@ -9,9 +9,9 @@ applications.
 
 ## specifications
 
- - Lightweight: It requires no composer dependencies and its code base is under 100kb.
- - Fast: Basic routing, components lasy loading and uses PHP as template engine.
- - Customizable: The framework can be extended throw Event hooks and behavior injections.
+ - Lightweight: Code base including its dependencies is under 100kb.
+ - Blazing fast: fast router, components lasy loading and uses PHP as template engine.
+ - Customizable: The framework components can be extended throw Event hooks and behavior injections.
  - Stable: The framework components have been well tested and the API is fixed.
  - Modular : internal routes correspond to MVC modules.
 
@@ -20,9 +20,6 @@ applications.
  - Router: resolve url to routes and get url from routes.
  - Base Classes for controllers and models.
  - Views : Layout management and themable views.
- - I18n : To internatinalize applications.
- - User session management: user login / logout and user permissions.
- - Assets management : To use external assets in your project
 
 ## Installation via composer
 

@@ -6,7 +6,8 @@ use piko\Piko;
 class TestModule extends \piko\Module
 {
     public $modules = [
-        'sub' => 'tests\modules\test\sub\SubModule'
+        'sub' => 'tests\modules\test\sub\SubModule',
+        'form' => 'tests\modules\test\models\ContactForm', // Not a module
     ];
 
     public function bootstrap()

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Piko - Web micro framework
  *
@@ -6,6 +7,7 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/piko-framework/piko
  */
+
 declare(strict_types=1);
 
 namespace piko;
@@ -15,6 +17,10 @@ use Exception;
 
 /**
  * Base application view.
+ *
+ * @method string getUrl(string $route, array<mixed> $params, boolean $absolute) Convenient method to convert
+ * a route to an url (see Router::getUrl()). This method is implemented as a behavior and can be overriden.
+ *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
 class View extends Component
@@ -24,14 +30,14 @@ class View extends Component
      *
      * @var integer
      */
-    const POS_HEAD = 1;
+    public const POS_HEAD = 1;
 
     /**
      * End of body position.
      *
      * @var integer
      */
-    const POS_END = 2;
+    public const POS_END = 2;
 
     /**
      * View filename extension
@@ -43,7 +49,7 @@ class View extends Component
     /**
      * View parameters.
      *
-     * @var array
+     * @var array<mixed>
      */
     public $params = [];
 
@@ -57,7 +63,7 @@ class View extends Component
     /**
      * The registered CSS code blocks.
      *
-     * @var array
+     * @var array<string>
      * @see View::registerCss()
      */
     public $css = [];
@@ -65,7 +71,7 @@ class View extends Component
     /**
      * The registered CSS files.
      *
-     * @var array
+     * @var array<string>
      * @see View::registerCssFile()
      */
     public $cssFiles = [];
@@ -73,7 +79,7 @@ class View extends Component
     /**
      * The registered JS code blocks
      *
-     * @var array
+     * @var array<string[]>
      * @see View::registerJs()
      */
     public $js = [];
@@ -81,7 +87,7 @@ class View extends Component
     /**
      * The registered JS files.
      *
-     * @var array
+     * @var array<string[]>
      * @see View::registerJsFile()
      */
     public $jsFiles = [];
@@ -89,21 +95,21 @@ class View extends Component
     /**
      * Directories where to find view files.
      *
-     * @var array
+     * @var array<string>
      */
     public $paths = [];
 
     /**
      * Parts of the head.
      *
-     * @var array
+     * @var array<string>
      */
     public $head = [];
 
     /**
      * Parts of the end of the body.
      *
-     * @var array
+     * @var array<string>
      */
     public $endBody = [];
 
@@ -128,7 +134,7 @@ class View extends Component
      * ],
      * ```
      *
-     * @var array
+     * @var array<string|array>
      */
     public $themeMap = [];
 
@@ -138,6 +144,13 @@ class View extends Component
      * @var string
      */
     public $charset = 'UTF-8';
+
+    protected function init(): void
+    {
+        if (!isset($this->behaviors['getUrl'])) {
+            $this->behaviors['getUrl'] = [Application::getInstance()->getRouter(), 'getUrl'];
+        }
+    }
 
     /**
      * Assemble html in the head position.
@@ -269,27 +282,6 @@ class View extends Component
     }
 
     /**
-     * Convenient method to convert a route to an url
-     *
-     * @param string $route The route to convert
-     * @param array $params The route params
-     * @param boolean $absolute Optional to have an absolute url.
-     * @throws RuntimeException if router is not instance of piko\Router
-     * @return string
-     * @see Router::getUrl
-     */
-    protected function getUrl(string $route, array $params = [], bool $absolute = false): string
-    {
-        $router = Piko::get('router');
-
-        if ($router instanceof Router) {
-            return $router->getUrl($route, $params, $absolute);
-        }
-
-        throw new RuntimeException('Router must be instance of piko\Router');
-    }
-
-    /**
      * Retrieve a view file.
      *
      * @param string $viewName The view name (without extension).
@@ -318,7 +310,7 @@ class View extends Component
         if (!empty($this->themeMap)) {
 
             foreach ($this->themeMap as $from => $tos) {
-                $from = Piko::getAlias($from);
+                $from = (string) Piko::getAlias($from);
 
                 if (strpos($path, $from) === 0) {
                     $n = strlen($from);
@@ -341,7 +333,7 @@ class View extends Component
      * Render the view.
      *
      * @param string $file The view file name.
-     * @param array $data An array of data (name-value pairs) to transmit to the view file.
+     * @param array<mixed> $model An array of data (name-value pairs) to transmit to the view file.
      * @return string The view output.
      */
     public function render(string $file, array $model = []): string
@@ -376,6 +368,6 @@ class View extends Component
             $model
         ]);
 
-        return $output;
+        return (string) $output;
     }
 }

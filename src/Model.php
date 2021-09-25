@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of Piko - Web micro framework
  *
@@ -6,6 +7,7 @@
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/piko-framework/piko
  */
+
 declare(strict_types=1);
 
 namespace piko;
@@ -23,14 +25,14 @@ abstract class Model extends Component
     /**
      * Errors hash container
      *
-     * @var array
+     * @var array<string>
      */
     protected $errors = [];
 
     /**
      * Get the public properties reprenting the data model
      *
-     * @return array
+     * @return array<mixed>
      */
     protected function getAttributes()
     {
@@ -52,7 +54,7 @@ abstract class Model extends Component
     /**
      * Bind directly the model data.
      *
-     * @param array $data An array of data (name-value pairs).
+     * @param array<mixed> $data An array of data (name-value pairs).
      * @return void
      */
     public function bind(array $data): void
@@ -69,7 +71,7 @@ abstract class Model extends Component
     /**
      * Get the model data as an associative array.
      *
-     * @return array
+     * @return array<mixed>
      */
     public function toArray(): array
     {
@@ -79,7 +81,7 @@ abstract class Model extends Component
     /**
      * Return the errors hash container
      *
-     * @return array
+     * @return array<string>
      */
     public function getErrors()
     {
@@ -95,6 +97,11 @@ abstract class Model extends Component
     {
     }
 
+    /**
+     * Check if the model is valid
+     *
+     * @return boolean
+     */
     public function isValid()
     {
         $this->validate();

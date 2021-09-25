@@ -57,11 +57,25 @@ class ApplicationTest extends TestCase
 
         $this->assertInstanceOf(Router::class, $app->getRouter());
         $this->assertInstanceOf(View::class, $app->getView());
-        $this->assertNull($app->getUser());
 
         $this->expectException(HttpException::class);
         $this->expectExceptionMessage('Route not defined');
         $this->expectExceptionCode(500);
+
+        $app->run();
+    }
+
+    public function testRunWithWrongModuleType()
+    {
+        $_SERVER['REQUEST_URI'] = '/';
+
+        $config = self::CONFIG;
+        $config['modules']['test'] = 'tests\modules\test\models\ContactForm';
+
+        $app = new Application($config);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('module test must be instance of Module');
 
         $app->run();
     }
@@ -106,7 +120,7 @@ class ApplicationTest extends TestCase
         $this->expectOutputString('Route not defined');
         $_SERVER['REQUEST_URI'] = '/forum';
         (new Application(self::CONFIG))->run();
-        $this->assertContains('HTTP/1.1 500 Route not defined', Piko::$app->headers);
+        $this->assertContains('HTTP/1.1 500 Route not defined', Application::$instance->headers);
     }
 
     public function testDefaultLayout()
