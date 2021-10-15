@@ -129,9 +129,10 @@ abstract class Module extends Component
      *
      * @param string $controllerId The controller identifier.
      * @param string $actionId The controller action identifier.
+     * @param string[] $params Optional query parameters.
      * @return mixed The module output.
      */
-    public function run(string $controllerId, string $actionId)
+    public function run(string $controllerId, string $actionId, array $params = [])
     {
         $controllerName = str_replace(' ', '', ucwords(str_replace('-', ' ', $controllerId))) . 'Controller';
         $actionId = str_replace(' ', '', ucwords(str_replace('-', ' ', $actionId)));
@@ -144,7 +145,7 @@ abstract class Module extends Component
         $controller->module = $this;
         $controller->id = $controllerId;
 
-        $output = $controller->runAction(lcfirst($actionId));
+        $output = $controller->runAction(lcfirst($actionId), $params);
 
         if ($controller->layout) {
             $this->layout = $controller->layout;

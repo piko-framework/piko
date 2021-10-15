@@ -28,8 +28,17 @@ class TestController extends \piko\Controller
         return 'TestModule::TestController::index2Action';
     }
 
-    public function index3Action()
+    public function index3Action(int $id = 0)
     {
-        return $_GET['id'];
+        return $id;
+    }
+
+    public function index4Action(float $lat = 0.0, float $lng = 0.0, bool $coordinates = false)
+    {
+        if ($coordinates) {
+            return (string) $lat . '/' . (string) $lng;
+        }
+
+        return '';
     }
 }

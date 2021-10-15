@@ -67,10 +67,11 @@ abstract class Controller extends Component
      * Runs an action within this controller with the specified action ID.
 
      * @param string $id the ID of the action to be executed.
+     * @param mixed[] $params An array of request parameters.
      * @return mixed the result of the action.
      * @throws RuntimeException if the requested action ID cannot be resolved into an action successfully.
      */
-    public function runAction(string $id)
+    public function runAction(string $id, array $params = [])
     {
         $this->trigger('beforeAction', [$this, $id]);
 
@@ -80,7 +81,38 @@ abstract class Controller extends Component
             throw new RuntimeException("Method \"$methodName\" not found in " . get_called_class());
         }
 
-        $output = $this->$methodName();
+        $method = new \ReflectionMethod(get_called_class(), $methodName);
+        $actionParams = [];
+
+        foreach ($method->getParameters() as $param) {
+            /* @var $param \ReflectionParameter */
+            $name = $param->getName();
+
+            if (isset($params[$name])) {
+
+                switch ((string) $param->getType()) {
+                    case 'int':
+                        $params[$name] = filter_var($params[$name], FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
+                        break;
+                    case 'float':
+                        $params[$name] = filter_var($params[$name], FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE);
+                        break;
+                    case 'bool':
+                        $params[$name] = filter_var($params[$name], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                        break;
+                }
+
+                $actionParams[$name] = $params[$name];
+            }
+        }
+
+        if (count($actionParams)) {
+            // @phpstan-ignore-next-line
+            $output = call_user_func_array([$this, $methodName], $actionParams);
+        } else {
+            $output = $this->$methodName();
+        }
+
         $this->trigger('afterAction', [$this, $id, $output]);
 
         return $output;

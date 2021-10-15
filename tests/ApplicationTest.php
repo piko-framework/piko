@@ -16,11 +16,11 @@ class ApplicationTest extends TestCase
             'router' => [
                 'class' => 'piko\Router',
                 'routes' => [
-                    '^/$' => 'test/test/index',
-                    '^/user/(\d+)' => 'test/test/index3|id=$1',
-                    '^/test/sub/til/(\w+)/(\w+)' => 'test/sub/til/$1/$2',
-                    '^/test/sub/(\w+)/(\w+)' => 'test/sub/$1/$2',
-                    '^/(\w+)/(\w+)/(\w+)$' => '$1/$2/$3',
+                    '/' => 'test/test/index',
+                    '/user/:id' => 'test/test/index3',
+                    '/location/:lat/:lng/:coordinates' => 'test/test/index4',
+                    '/test/sub/:controller/:action' => 'test/sub/:controller/:action',
+                    '/:module/:controller/:action' => ':module/:controller/:action',
                 ],
             ]
         ],
@@ -97,17 +97,17 @@ class ApplicationTest extends TestCase
         (new Application(self::CONFIG))->run();
     }
 
+    public function testRunWithUriParameters()
+    {
+        $this->expectOutputString('5.33/60.54');
+        $_SERVER['REQUEST_URI'] = '/location/5.33/60.54/1';
+        (new Application(self::CONFIG))->run();
+    }
+
     public function testRunWithSubModule()
     {
         $this->expectOutputString('TestModule::SubModule::TestController::indexAction');
         $_SERVER['REQUEST_URI'] = '/test/sub/test/index';
-        (new Application(self::CONFIG))->run();
-    }
-
-    public function testRunWithSubSubModule()
-    {
-        $this->expectOutputString('TestModule::SubModule::SubtilModule::TestController::indexAction');
-        $_SERVER['REQUEST_URI'] = '/test/sub/til/test/index';
         (new Application(self::CONFIG))->run();
     }
 

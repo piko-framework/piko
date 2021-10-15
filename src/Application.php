@@ -148,7 +148,7 @@ class Application extends Component
             $config['components']['router'] = [
                 'class' => 'piko\Router',
                 'routes' => [
-                    '^/(\w+)/(\w+)/(\w+)' => '$1/$2/$3',
+                    ':module/:controller/:action' => ':module/:controller/:action',
                 ],
             ];
         }
@@ -200,13 +200,17 @@ class Application extends Component
             }
         }
 
+        $router = $this->getRouter();
+        $router->baseUri = (string) Piko::getAlias('@web');
+
         $this->trigger('beforeRoute');
-        $route = $this->getRouter()->resolve();
+        $match = $this->getRouter()->resolve($_SERVER['REQUEST_URI']);
+        $route = $match->found ? $match->handler : '';
         $this->trigger('afterRoute', [&$route]);
 
         try {
 
-            echo $this->dispatch($route);
+            echo $this->dispatch($route, $match->params);
 
         } catch (Throwable $e) {
 
@@ -229,10 +233,12 @@ class Application extends Component
      * '{moduleId}/{controllerId}'
      * '{moduleId}'
      * ```
+     * @param string[] $params Optional route parameters
+     *
      * @throws RuntimeException
      * @return string The output result.
      */
-    public function dispatch($route)
+    public function dispatch($route, array $params = [])
     {
         if ($route === '') {
             throw new HttpException('Route not defined', 500);
@@ -258,8 +264,8 @@ class Application extends Component
         }
 
         $module->id = $moduleId;
-        $this->trigger('beforeRender', [&$module, $controllerId, $actionId]);
-        $output = $module->run($controllerId, $actionId);
+        $this->trigger('beforeRender', [&$module, $controllerId, $actionId, &$params]);
+        $output = $module->run($controllerId, $actionId, $params);
 
         if ($module->layout !== false) {
             $layout = $module->layout == null ? $this->defaultLayout : $module->layout;

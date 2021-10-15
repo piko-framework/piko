@@ -12,10 +12,10 @@ class IndexController extends \piko\Controller
         return 'TestModule::IndexController::indexAction';
     }
 
-    public function sayHelloAction()
+    public function sayHelloAction(string $name = '')
     {
         return $this->render('hello', [
-            'name' => $_GET['name']
+            'name' => $name
         ]);
     }
 

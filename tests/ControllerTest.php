@@ -18,11 +18,11 @@ class ControllerTest extends TestCase
             'router' => [
                 'class' => 'piko\Router',
                 'routes' => [
-                    '^/$' => 'test/test/index',
-                    '^/user/(\d+)' => 'test/test/index3|id=$1',
-                    '^/test/sub/til/(\w+)/(\w+)' => 'test/sub/til/$1/$2',
-                    '^/test/sub/(\w+)/(\w+)' => 'test/sub/$1/$2',
-                    '^/(\w+)/(\w+)/(\w+)$' => '$1/$2/$3',
+                    '/' => 'test/test/index',
+                    '/user/:id' => 'test/test/index3',
+                    '/test/sub/til/:controller/:action' => 'test/sub/til/:controller/:action',
+                    '/test/sub/:controller/:action' => 'test/sub/:controller/:action',
+                    '/:module/:controller/:action' => ':module/:controller/:action',
                 ],
             ]
         ],
@@ -35,6 +35,10 @@ class ControllerTest extends TestCase
     {
         Piko::reset();
         new Application(self::APP_CONFIG);
+
+        $_SERVER['REQUEST_SCHEME'] = 'http';
+        $_SERVER['HTTP_HOST'] = 'localhost';
+
         $this->controller = new IndexController([
             'id' => 'index',
             'layout' => false,
@@ -51,9 +55,7 @@ class ControllerTest extends TestCase
 
     public function testRenderView()
     {
-        $_GET['name'] = 'Toto';
-
-        $output = $this->controller->runAction('sayHello');
+        $output = $this->controller->runAction('sayHello', ['name' => 'Toto']);
 
         $this->assertMatchesRegularExpression('~<p>Hello Toto</p>~', $output);
     }
