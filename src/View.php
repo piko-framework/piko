@@ -159,7 +159,7 @@ class View extends Component
      */
     protected function head(): string
     {
-        $this->trigger('beforeHead');
+        $this->trigger('beforeHead', [$this]);
 
         if (!empty($this->cssFiles)) {
             foreach ($this->cssFiles as $url) {
@@ -197,7 +197,7 @@ class View extends Component
      */
     protected function endBody(): string
     {
-        $this->trigger('beforeEndBody');
+        $this->trigger('beforeEndBody', [$this]);
 
         if (!empty($this->jsFiles[self::POS_END])) {
             foreach ($this->jsFiles[self::POS_END] as $url) {
