@@ -105,4 +105,34 @@ class ViewTest extends TestCase
             ])
         );
     }
+
+    public function testBeforeRender()
+    {
+        $view = Application::getInstance()->getView();
+        $view->on('beforeRender', function(&$file, &$model) {
+            $file =  __DIR__ . '/theme/main.php';
+            $model = ['content' => 'testBeforeRender'];
+        });
+
+        $output = $view->render(__DIR__ . '/layouts/main.php', [
+            'content' => ''
+        ]);
+
+        $this->assertMatchesRegularExpression('#<h1>Main layout override</h1>#', $output);
+        $this->assertMatchesRegularExpression('#testBeforeRender#', $output);
+    }
+
+    public function testAfterRender()
+    {
+        $view = Application::getInstance()->getView();
+        $view->on('afterRender', function(&$output) {
+            $output .= '<!-- test afterRender -->';
+        });
+
+        $output = $view->render(__DIR__ . '/layouts/main.php', [
+            'content' => ''
+        ]);
+
+        $this->assertMatchesRegularExpression('#<!-- test afterRender -->#', $output);
+    }
 }

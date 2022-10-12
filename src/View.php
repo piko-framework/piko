@@ -344,10 +344,7 @@ class View extends Component
 
         $file = $this->applyTheme($file);
 
-        $this->trigger('beforeRender', [
-            $file,
-            $model
-        ]);
+        $this->trigger('beforeRender', [&$file, &$model]);
 
         extract($model, EXTR_OVERWRITE);
 
@@ -362,11 +359,7 @@ class View extends Component
             ob_end_clean();
         }
 
-        $this->trigger('afterRender', [
-            $output,
-            $file,
-            $model
-        ]);
+        $this->trigger('afterRender', [&$output]);
 
         return (string) $output;
     }
