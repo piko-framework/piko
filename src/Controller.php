@@ -147,10 +147,11 @@ abstract class Controller extends Component
      * Proxy to Application::dispatch
      *
      * @param string $route The route to forward
+     * @param array<string> $params An array of params (name-value pairs) associated to the route.
      */
-    protected function forward(string $route): string
+    protected function forward(string $route, array $params = []): string
     {
-        return Application::getInstance()->dispatch($route);
+        return Application::getInstance()->dispatch($route, $params);
     }
 
     /**
