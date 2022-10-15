@@ -10,17 +10,13 @@ applications.
 
 ## specifications
 
- - Lightweight: Code base including its dependencies is under 100kb.
- - Blazing fast: fast router, components lasy loading and uses PHP as template engine.
- - Customizable: The framework components can be extended throw Event hooks and behavior injections.
+ - Lightweight: Code base including its dependencies is under 200kb.
+ - Blazing fast: Fast router ([Piko router](https://github.com/piko-framework/router)), components lazy loading and 
+ using PHP as template engine.
+ - Customizable: The framework components can be customized throw events and behavior injections.
  - Stable: The framework components have been well tested and the API is fixed.
- - Modular : internal routes correspond to MVC modules.
+ - Modular : MVC logic is packaged into modules.
 
-## Features
-
- - Router: resolve url to routes and get url from routes.
- - Base Classes for controllers and models.
- - Views : Layout management and themable views.
 
 ## Installation via composer
 
