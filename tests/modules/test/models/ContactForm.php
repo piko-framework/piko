@@ -4,8 +4,10 @@ namespace tests\modules\test\models;
 /**
  * This is a class reprensenting a contact form.
  */
-class ContactForm extends \piko\Model
+class ContactForm
 {
+    use \piko\ModelTrait;
+
     public $name = 'tata';
     public $email = '';
     public $message = '';
@@ -13,13 +15,11 @@ class ContactForm extends \piko\Model
     protected function validate(): void
     {
         if ($this->name === '') {
-            $this->errors['name'] = 'Name is required';
+            $this->setError('name', 'Name is required');
         }
 
         if ($this->email === '') {
-            $this->errors['email'] = 'Email is required';
+            $this->setError('email', 'Email is required');
         }
-
-        parent::validate();
     }
 }
