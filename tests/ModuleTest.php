@@ -5,6 +5,8 @@ use tests\modules\test\TestModule;
 use tests\modules\test\sub\SubModule;
 use tests\modules\test\sub\til\SubtilModule;
 
+use HttpSoft\Message\ServerRequestFactory;
+
 class ModuleTest extends TestCase
 {
     public function testGetModule()
@@ -30,15 +32,22 @@ class ModuleTest extends TestCase
 
     public function testRunWithCustomControllerMap()
     {
+        $factory = new ServerRequestFactory();
+        $request = $factory->createServerRequest('GET', '/')
+                           ->withAttribute('controller', 'blog')
+                           ->withAttribute('action', 'index');
+
         $module = new TestModule([
             'controllerMap' => [
                 'blog' => 'tests\modules\test\controllers\TestController'
             ]
         ]);
 
+        $response = $module->handle($request);
+
         $this->assertEquals(
             'TestModule::TestController::indexAction',
-            $module->run('blog', 'index')
+            (string) $response->getBody()
         );
     }
 }

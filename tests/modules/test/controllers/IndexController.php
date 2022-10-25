@@ -2,18 +2,33 @@
 namespace tests\modules\test\controllers;
 
 use piko\Piko;
+use Psr\Http\Message\ServerRequestInterface;
 
 class IndexController extends \piko\Controller
 {
     public $layout = false;
+
+    public function setRequest(ServerRequestInterface $request): void
+    {
+        $this->request = $request;
+    }
+
+    public function testForward($route = '', $params = [])
+    {
+        return $this->forward($route, $params);
+    }
 
     public function indexAction()
     {
         return 'TestModule::IndexController::indexAction';
     }
 
-    public function sayHelloAction(string $name = '')
+    public function sayHelloAction(string $name = '', $layout = null)
     {
+        if (is_string($layout)) {
+            $this->layout = $layout;
+        }
+
         return $this->render('hello', [
             'name' => $name
         ]);
@@ -74,6 +89,11 @@ class IndexController extends \piko\Controller
     public function rawInputAction()
     {
         return $this->rawInput();
+    }
+
+    public function jsonResponseAction()
+    {
+        return $this->jsonResponse(['response_type' => 'json']);
     }
 
 }

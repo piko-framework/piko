@@ -16,9 +16,11 @@
   "homepage" : "https://github.com/piko-framework/piko",
   "license" : "LGPL-3.0-or-later",
   "require" : {
-    "php" : ">=7.1.0",
+    "php": ">=7.1.0",
+    "httpsoft/http-server-request": "^1.0",
     "piko/core": "^1.0",
-    "piko/router": "^2.0"
+    "piko/router": "^2.0",
+    "psr/http-server-middleware": "^1.0"
   },
   "autoload" : {
     "psr-4" : {
@@ -39,5 +41,8 @@
     "phpunit" : "phpunit",
     "phpcs" : "phpcs --standard=vendor/piko/core/coding-standard src",
     "phpstan" : "phpstan"
+  },
+  "config": {
+    "sort-packages": true
   }
 }

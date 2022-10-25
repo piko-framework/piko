@@ -5,6 +5,9 @@ use tests\modules\test\controllers\IndexController;
 use piko\Piko;
 use piko\Application;
 
+use HttpSoft\Message\ServerRequestFactory;
+use Psr\Http\Message\ServerRequestInterface;
+
 class ControllerTest extends TestCase
 {
     /**
@@ -42,45 +45,100 @@ class ControllerTest extends TestCase
         $this->controller = new IndexController([
             'id' => 'index',
             'layout' => false,
-            'module' => Application::$instance->getModule('test'),
+            'module' => Application::createModule('test'),
         ]);
+    }
+
+    protected function createRequest($uri, $method = 'GET', $serverParams = []): ServerRequestInterface
+    {
+        $factory = new ServerRequestFactory();
+        $request = $factory->createServerRequest($method, $uri, $serverParams);
+
+        return $request;
     }
 
     public function testUnknownAction()
     {
+        $request = $this->createRequest('/')->withAttribute('action', 'goodBye');
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Method "goodByeAction" not found in ' . IndexController::class);
-        $this->controller->runAction('goodBye');
+        $this->controller->handle($request);
     }
 
-    public function testRenderView()
+    public function testRenderViewWithoutLayout()
     {
-        $output = $this->controller->runAction('sayHello', ['name' => 'Toto']);
+        $request = $this->createRequest('/')
+                        ->withAttribute('action', 'say-hello')
+                        ->withAttribute('route_params', ['name' => 'Toto']);
 
-        $this->assertMatchesRegularExpression('~<p>Hello Toto</p>~', $output);
+        $response = $this->controller->handle($request);
+
+        $body = (string) $response->getBody();
+
+        $this->assertFalse(strpos($body, '<!DOCTYPE html>'));
+        $this->assertMatchesRegularExpression('~<p>Hello Toto</p>~', $body);
+    }
+
+    public function testRenderViewWithLayout()
+    {
+        $request = $this->createRequest('/')
+        ->withAttribute('action', 'say-hello')
+        ->withAttribute('route_params', ['name' => 'Toto', 'layout' => 'main']);
+
+        $response = $this->controller->handle($request);
+        $body = (string) $response->getBody();
+
+        $this->assertMatchesRegularExpression('~<!DOCTYPE html>~', $body);
+        $this->assertMatchesRegularExpression('~<p>Hello Toto</p>~', $body);
     }
 
     public function testRedirectUsingGetUrl()
     {
-        $this->controller->runAction('goHome');
-        $this->assertContains('Location: /', Application::$instance->headers);
+        $request = $this->createRequest('/')->withAttribute('action', 'goHome');
+        $response = $this->controller->handle($request);
+        $values = $response->getHeader('Location');
+        $this->assertContains('/', $values);
     }
 
     public function testForward()
     {
-        $this->assertEquals('TestModule::TestController::indexAction', $this->controller->runAction('homeTest'));
+        $this->controller->setRequest($this->createRequest('/'));
+        $response = $this->controller->testForward('test/test/index');
+        $this->assertEquals('TestModule::TestController::indexAction',  $response);
+    }
+
+    public function testForwardWithEmptyRoute()
+    {
+        $this->controller->setRequest($this->createRequest('/'));
+        $response = $this->controller->testForward();
+        $this->assertEquals('',  $response);
     }
 
     public function testJsonResponse()
     {
-        $response = $this->controller->runAction('testJson');
+        $request = $this->createRequest('/')->withAttribute('action', 'testJson');
+        $response = $this->controller->handle($request);
         $this->assertFalse($this->controller->layout);
-        $this->assertContains('Content-Type: application/json', Application::getInstance()->headers);
-        $data = json_decode($response, true);
+        $values = $response->getHeader('Content-Type');
+        $this->assertContains('application/json', $values);
+        $data = json_decode((string) $response->getBody(), true);
         $this->assertArrayHasKey('status', $data);
         $this->assertEquals('ok', $data['status']);
     }
 
+    public function testJsonResponseWithWrongArgument()
+    {
+        $request = $this->createRequest('/')->withAttribute('action', 'testJson');
+        $response = $this->controller->handle($request);
+        $this->assertFalse($this->controller->layout);
+        $values = $response->getHeader('Content-Type');
+        $this->assertContains('application/json', $values);
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertArrayHasKey('status', $data);
+        $this->assertEquals('ok', $data['status']);
+    }
+
+    /*
     public function testGetMethod()
     {
         $_SERVER['REQUEST_METHOD'] = 'GET';
@@ -104,16 +162,27 @@ class ControllerTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'DELETE';
         $this->assertEquals('is delete', $this->controller->runAction('testDelete'));
     }
+    */
 
     public function testAjaxRequest()
     {
-        $this->assertEquals('is not ajax', $this->controller->runAction('testAjax'));
-        $_SERVER['HTTP_X_REQUESTED_WITH'] = 'xmlhttprequest';
-        $this->assertEquals('is ajax', $this->controller->runAction('testAjax'));
+        $request = $this->createRequest('/', 'POST')->withAttribute('action', 'testAjax');
+        $response = $this->controller->handle($request);
+        $this->assertEquals('is not ajax', (string) $response->getBody());
+
+        $request = $this->createRequest('/', 'POST', [
+            'HTTP_X_REQUESTED_WITH' => 'xmlhttprequest'
+        ])->withAttribute('action', 'testAjax');
+        $response = $this->controller->handle($request);
+
+        $this->assertEquals('is ajax', (string) $response->getBody());
     }
 
+    /*
     public function testRawInput()
     {
         $this->assertEquals('', $this->controller->runAction('rawInput'));
     }
+    */
+
 }

@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace piko;
 
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionClass;
 use RuntimeException;
 
@@ -20,7 +23,7 @@ use RuntimeException;
  *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
-abstract class Module extends Component
+abstract class Module extends Component implements RequestHandlerInterface
 {
     /**
      * The module identifier.
@@ -124,35 +127,26 @@ abstract class Module extends Component
         return $this->basePath;
     }
 
-    /**
-     * Run module controller action.
-     *
-     * @param string $controllerId The controller identifier.
-     * @param string $actionId The controller action identifier.
-     * @param string[] $params Optional query parameters.
-     * @return mixed The module output.
-     */
-    public function run(string $controllerId, string $actionId, array $params = [])
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        $this->id = $request->getAttribute('module', '');
+        $controllerId = $request->getAttribute('controller', 'default');
+        $controller = $this->createController($controllerId);
+
+        // TODO: wrap controller response into a layout
+
+        return  $controller->handle($request);
+    }
+
+    protected function createController(string $controllerId): Controller
     {
         $controllerName = str_replace(' ', '', ucwords(str_replace('-', ' ', $controllerId))) . 'Controller';
-        $actionId = str_replace(' ', '', ucwords(str_replace('-', ' ', $actionId)));
-
-        $controllerClass = isset($this->controllerMap[$controllerId]) ?
-                           $this->controllerMap[$controllerId] :
-                           $this->controllerNamespace . '\\' . $controllerName;
+        $controllerClass = $this->controllerMap[$controllerId] ?? $this->controllerNamespace . '\\' . $controllerName;
 
         $controller = new $controllerClass();
         $controller->module = $this;
         $controller->id = $controllerId;
 
-        $output = $controller->runAction(lcfirst($actionId), $params);
-
-        if ($controller->layout) {
-            $this->layout = $controller->layout;
-        } elseif ($controller->layout === false) {
-            $this->layout = false;
-        }
-
-        return $output;
+        return $controller;
     }
 }

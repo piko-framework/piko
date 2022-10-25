@@ -26,18 +26,12 @@ class HttpException extends Exception
     /**
      * Constructor set http header with response code and message if code is given
      *
-     * @param string $message The exception message.
      * @param int $code The exception code (should be an HTTP status code, eg. 404)
+     * @param string $message The exception message.
      * @param Throwable $previous A previous exception.
      */
-    public function __construct(string $message = '', int $code = 404, Throwable $previous = null)
+    public function __construct(int $code = 404, string $message = '', Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
-
-        if ($this->getCode()) {
-            $protocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.1';
-            $header = $protocol . ' ' . $this->getCode() . ' ' . $this->getMessage();
-            array_unshift(Application::$instance->headers, $header);
-        }
     }
 }

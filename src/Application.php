@@ -12,15 +12,24 @@ declare(strict_types=1);
 
 namespace piko;
 
+use HttpSoft\ServerRequest\ServerRequestCreator;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
+use SplQueue;
 use Throwable;
+use piko\Application\BootstrapMiddleware;
+use piko\Application\ErrorHandler;
+use piko\Application\RoutingMiddleware;
 
 /**
- * The Web application class
+ * The main application class
  *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
-class Application extends Component
+class Application extends Component implements RequestHandlerInterface
 {
     /**
      * The absolute base path of the application.
@@ -70,13 +79,6 @@ class Application extends Component
     public $bootstrap = [];
 
     /**
-     * The charset encoding used in the application.
-     *
-     * @var string
-     */
-    public $charset = 'UTF-8';
-
-    /**
      * The configuration loaded on application instantiation.
      *
      * @var array<mixed>
@@ -114,11 +116,9 @@ class Application extends Component
     public $language = 'en';
 
     /**
-     * The response headers.
-     *
-     * @var array<string>
+     * @var SplQueue<MiddlewareInterface>
      */
-    public $headers = [];
+    protected $pipeline = null;
 
     /**
      * Application Instance
@@ -138,19 +138,11 @@ class Application extends Component
         parent::__construct($config);
 
         if (!isset($config['components']['view'])) {
-            $config['components']['view'] = [
-                'class' => 'piko\View',
-                'charset' => $this->charset
-            ];
+            $config['components']['view'] = 'piko\View';
         }
 
         if (!isset($config['components']['router'])) {
-            $config['components']['router'] = [
-                'class' => 'piko\Router',
-                'routes' => [
-                    ':module/:controller/:action' => ':module/:controller/:action',
-                ],
-            ];
+            $config['components']['router'] = 'piko\Router';
         }
 
         if (isset($config['components'])) {
@@ -162,13 +154,13 @@ class Application extends Component
             }
         }
 
-        $baseUrl = isset($config['baseUrl']) ? $config['baseUrl'] : rtrim(dirname($_SERVER['SCRIPT_NAME']), '\\/');
-
-        Piko::setAlias('@web', $baseUrl);
-        Piko::setAlias('@webroot', dirname($_SERVER['SCRIPT_FILENAME']));
         Piko::setAlias('@app', $this->basePath);
+        Piko::setAlias('@web', $config['baseUrl'] ?? '');
+        Piko::setAlias('@webroot', $config['webroot'] ?? $this->basePath . '/web');
 
         $this->config = $config;
+
+        $this->pipeline = new SplQueue();
 
         static::$instance = $this;
 
@@ -186,118 +178,74 @@ class Application extends Component
     }
 
     /**
+     * Add a middleware in the application pipeline queue
+     *
+     * @param MiddlewareInterface $middleware
+     *
+     * @see \Psr\Http\Server\MiddlewareInterface
+     */
+    public function pipe(MiddlewareInterface $middleware): void
+    {
+        $this->pipeline->enqueue($middleware);
+    }
+
+    /**
      * Run the application.
+     *
+     * @param ServerRequestInterface|null $request
+     * @param bool $emitHeaders Controls whether headers will be emmited (header() function called)
      *
      * @return void
      */
-    public function run()
+    public function run(ServerRequestInterface $request = null, bool $emitHeaders = true)
     {
-        foreach ($this->bootstrap as $name) {
-            $module = Piko::createObject($this->modules[$name]);
-
-            if ($module instanceof Module && method_exists($module, 'bootstrap')) {
-                $module->bootstrap();
-            }
+        if (!$request) {
+            $request = ServerRequestCreator::create();
         }
 
-        $router = $this->getRouter();
-        $router->baseUri = (string) Piko::getAlias('@web');
-
-        $this->trigger('beforeRoute');
-        $match = $this->getRouter()->resolve($_SERVER['REQUEST_URI']);
-        $route = $match->found ? $match->handler : '';
-        $this->trigger('afterRoute', [&$route]);
+        $this->pipeline->enqueue(new BootstrapMiddleware());
+        $this->pipeline->enqueue(new RoutingMiddleware());
 
         try {
-
-            echo $this->dispatch($route, $match->params);
-
+            $response = $this->handle($request);
         } catch (Throwable $e) {
+            $errorHandler = new ErrorHandler();
+            $response = $errorHandler->handle($request->withAttribute('exception', $e));
+        }
 
-            if ($this->errorRoute === '') {
-                throw $e;
+        if ($emitHeaders) {
+            $statusCode = $response->getStatusCode();
+            $reasonPhrase = $response->getReasonPhrase();
+            $protocolVersion = $response->getProtocolVersion();
+            $status = $statusCode . (!$reasonPhrase ? '' : ' ' . $reasonPhrase);
+
+            header('HTTP/' . $protocolVersion . ' ' . $status, true, $statusCode);
+
+            foreach ($response->getHeaders() as $header => $values) {
+                $header = trim($header);
+
+                foreach ($values as $value) {
+                    header($header . ': ' . trim($value));
+                }
             }
-
-            Piko::set('exception', $e);
-            echo $this->dispatch($this->errorRoute);
         }
+
+        echo $response->getBody();
     }
 
     /**
-     * Dispatch a route and return the output result.
-     *
-     * @param string $route The route to dispatch. The route format is one of the following :
-     * ```
-     * '{moduleId}/{subModuleId}/.../{controllerId}/{actionId}'
-     * '{moduleId}/{controllerId}/{actionId}'
-     * '{moduleId}/{controllerId}'
-     * '{moduleId}'
-     * ```
-     * @param string[] $params Optional route parameters
-     *
-     * @throws RuntimeException
-     * @return string The output result.
+     * {@inheritDoc}
+     * @see \Psr\Http\Server\RequestHandlerInterface::handle()
      */
-    public function dispatch($route, array $params = [])
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        if ($route === '') {
-            throw new HttpException('Route not defined', 500);
+        if ($this->pipeline->count() === 0) {
+            throw  new HttpException(404, 'Not Found');
         }
 
-        $parts = explode('/', trim($route, '/'));
+        $middleware = $this->pipeline->dequeue();
 
-        $moduleId = array_shift($parts);
-        $actionId = array_pop($parts) ?? 'index';
-        $controllerId = array_pop($parts);
-
-        if ($controllerId === null) {
-            $controllerId = $actionId;
-            $actionId = 'index';
-        }
-
-        $module = $this->getModule($moduleId);
-
-        // In case of sub module
-        while ($parts) {
-            $moduleId = array_shift($parts);
-            $module = $module->getModule($moduleId);
-        }
-
-        $module->id = $moduleId;
-        $this->trigger('beforeRender', [&$module, $controllerId, $actionId, &$params]);
-        $output = $module->run($controllerId, $actionId, $params);
-
-        if ($module->layout !== false) {
-            $layout = $module->layout == null ? $this->defaultLayout : $module->layout;
-            $view = $this->getView();
-            $path = empty($module->layoutPath) ? $this->defaultLayoutPath : $module->layoutPath;
-            $view->paths[] = $path;
-            $output = $view->render($layout, ['content' => $output]);
-        }
-
-        $this->trigger('afterRender', [&$module, &$output, &$this->headers]);
-
-        foreach ($this->headers as $header) {
-            header($header);
-        }
-
-        return $output;
-    }
-
-    /**
-     * Set Response header
-     *
-     * @param string $header The complete header (key:value) or just the header key
-     * @param string $value  (optional) The header value
-     */
-    public function setHeader(string $header, string $value = ''): void
-    {
-        if (($pos = strpos($header, ':')) !== false) {
-            $value = substr($header, $pos + 1);
-            $header = substr($header, 0, $pos);
-        }
-
-        $this->headers[] = trim($header) . ': ' . trim($value);
+        return $middleware->process($request, $this);
     }
 
     /**
@@ -321,25 +269,74 @@ class Application extends Component
     }
 
     /**
-     * Get a module instance
+     * Parse a route and return an array containing the module's id, the controller's id and the action's id.
+     *
+     * @param string $route The route to parse. The route format is one of the following :
+     *
+     * ```
+     * '{moduleId}/{subModuleId}/.../{controllerId}/{actionId}'
+     * '{moduleId}/{controllerId}/{actionId}'
+     * '{moduleId}/{controllerId}'
+     * '{moduleId}'
+     * ```
+     * @return array<string|null>
+     */
+    public static function parseRoute(string $route): array
+    {
+        $parts = explode('/', trim($route, '/'));
+
+        $moduleId = array_shift($parts);
+        $actionId = array_pop($parts);
+        $controllerId = array_pop($parts);
+
+        if ($controllerId === null) {
+            $controllerId = $actionId;
+            $actionId = null;
+        }
+
+        if (count($parts)) {
+            $moduleId .= '/' . implode('/', $parts);
+        }
+
+        return [$moduleId, $controllerId, $actionId];
+    }
+
+    /**
+     * Create a module instance based on its definition in the configuration
      *
      * @param string $moduleId The module identifier
      * @throws RuntimeException
      *
      * @return Module instance
      */
-    public function getModule($moduleId)
+    public static function createModule(string $moduleId): Module
     {
-        if (!isset($this->modules[$moduleId])) {
+        $app = static::getInstance();
+
+        $parts = [];
+
+        if (strpos($moduleId, '/') !== false) {
+            $parts = explode('/', trim($moduleId, '/'));
+            $moduleId = array_shift($parts);
+        }
+
+        if (!isset($app->modules[$moduleId])) {
             throw new RuntimeException("Configuration not found for module {$moduleId}.");
         }
 
-        $module = Piko::createObject($this->modules[$moduleId]);
+        $module = Piko::createObject($app->modules[$moduleId]);
 
         if ($module instanceof Module) {
+
+            // In case of sub module
+            while ($parts) {
+                $moduleId = array_shift($parts);
+                $module = $module->getModule($moduleId);
+            }
+
             return $module;
         }
 
-        throw new RuntimeException("module $moduleId must be instance of Module");
+        throw new RuntimeException("module $moduleId must be instance of piko\Module");
     }
 }

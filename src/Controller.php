@@ -3,7 +3,7 @@
 /**
  * This file is part of Piko - Web micro framework
  *
- * @copyright 2019-2021 Sylvain PHILIP
+ * @copyright 2019-2022 Sylvain PHILIP
  * @license LGPL-3.0; see LICENSE.txt
  * @link https://github.com/piko-framework/piko
  */
@@ -12,6 +12,11 @@ declare(strict_types=1);
 
 namespace piko;
 
+use HttpSoft\Message\Response;
+use HttpSoft\Message\StreamFactory;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
 
 /**
@@ -22,7 +27,7 @@ use RuntimeException;
  *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
-abstract class Controller extends Component
+abstract class Controller extends Component implements RequestHandlerInterface
 {
     /**
      * The controller identifier.
@@ -56,11 +61,38 @@ abstract class Controller extends Component
      */
     public $module;
 
+    /**
+     *
+     * @var ServerRequestInterface
+     */
+    protected $request;
+
+    /**
+     *
+     * @var ResponseInterface
+     */
+    protected $response;
+
+    /**
+     * {@inheritDoc}
+     * @see \piko\Component::init()
+     */
     protected function init(): void
     {
         if (!isset($this->behaviors['getUrl'])) {
             $this->behaviors['getUrl'] = [Application::getInstance()->getRouter(), 'getUrl'];
         }
+    }
+
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        $this->request = $request;
+        $this->response = new Response();
+
+        $params = $this->request->getAttribute('route_params', []);
+        $actionId = $this->request->getAttribute('action', 'index');
+
+        return $this->runAction($actionId, $params);
     }
 
     /**
@@ -71,51 +103,68 @@ abstract class Controller extends Component
      * @return mixed the result of the action.
      * @throws RuntimeException if the requested action ID cannot be resolved into an action successfully.
      */
-    public function runAction(string $id, array $params = [])
+    private function runAction(string $id, array $params = [])
     {
         $this->trigger('beforeAction', [$this, $id]);
 
-        $methodName = $id . 'Action';
+        $methodName = \lcfirst(str_replace(' ', '', ucwords(str_replace('-', ' ', $id)))) . 'Action';
 
         if (!method_exists($this, $methodName)) {
             throw new RuntimeException("Method \"$methodName\" not found in " . get_called_class());
         }
 
+        $actionParams = $this->getMethodArguments($methodName, $params);
+
+        if (count($actionParams)) {
+            // @phpstan-ignore-next-line
+            $response = call_user_func_array([$this, $methodName], $actionParams);
+        } else {
+            $response = $this->$methodName();
+        }
+
+        $this->trigger('afterAction', [$this, $id, &$response]);
+
+        if ($response instanceof ResponseInterface) {
+
+            return $response;
+        }
+
+        return $this->response->withBody((new StreamFactory())->createStream((string) $response));
+    }
+
+    /**
+     * @param string $methodName The method to analyse
+     * @param array<mixed> $data A key-value paired array to bind into the method arguments.
+     * @return array<mixed>
+     */
+    private function getMethodArguments(string $methodName, array $data = []): array
+    {
         $method = new \ReflectionMethod(get_called_class(), $methodName);
         $actionParams = [];
 
         foreach ($method->getParameters() as $param) {
             /* @var $param \ReflectionParameter */
-            $name = $param->getName();
+            $name = (string) $param->getName();
 
-            if (isset($params[$name])) {
+            if (isset($data[$name])) {
 
                 switch ((string) $param->getType()) {
                     case 'int':
-                        $params[$name] = filter_var($params[$name], FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
+                        $data[$name] = filter_var($data[$name], FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
                         break;
                     case 'float':
-                        $params[$name] = filter_var($params[$name], FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE);
+                        $data[$name] = filter_var($data[$name], FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE);
                         break;
                     case 'bool':
-                        $params[$name] = filter_var($params[$name], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                        $data[$name] = filter_var($data[$name], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
                         break;
                 }
 
-                $actionParams[$name] = $params[$name];
+                $actionParams[$name] = $data[$name];
             }
         }
 
-        if (count($actionParams)) {
-            // @phpstan-ignore-next-line
-            $output = call_user_func_array([$this, $methodName], $actionParams);
-        } else {
-            $output = $this->$methodName();
-        }
-
-        $this->trigger('afterAction', [$this, $id, $output]);
-
-        return $output;
+        return $actionParams;
     }
 
     /**
@@ -123,14 +172,28 @@ abstract class Controller extends Component
      *
      * @param string $viewName The view file name.
      * @param array<mixed> $data An array of data (name-value pairs) to transmit to the view.
-     * @return string|null The view output.
+     * @return ResponseInterface
      */
-    protected function render(string $viewName, array $data = []): ?string
+    protected function render(string $viewName, array $data = []): ResponseInterface
     {
-        $view = Application::getInstance()->getView();
+        $app = Application::getInstance();
+
+        $view = $app->getView();
         $view->paths[] = $this->getViewPath();
 
-        return $view->render($viewName, $data);
+        $output = $view->render($viewName, $data);
+
+        if ($this->layout !== false) {
+            $layout = $this->layout === null ? $app->defaultLayout : $this->layout;
+            $view = $app->getView();
+            $path = $this->module->layoutPath ?? $app->defaultLayoutPath ;
+            $view->paths[] = $path;
+            $output = $view->render($layout, ['content' => $output]);
+        }
+
+        $body = (new StreamFactory())->createStream($output);
+
+        return $this->response->withBody($body);
     }
 
     /**
@@ -140,18 +203,38 @@ abstract class Controller extends Component
      */
     protected function redirect(string $url): void
     {
-        Application::getInstance()->setHeader('Location', $url);
+        $this->response = $this->response->withHeader('Location', $url);
     }
 
     /**
-     * Proxy to Application::dispatch
+     * Forward the given route to another module
      *
      * @param string $route The route to forward
      * @param array<string> $params An array of params (name-value pairs) associated to the route.
      */
     protected function forward(string $route, array $params = []): string
     {
-        return Application::getInstance()->dispatch($route, $params);
+        list($moduleId, $controllerId, $actionId) = Application::parseRoute($route);
+
+        $request = $this->request;
+
+        if ($controllerId) {
+            $request = $request->withAttribute('controller', $controllerId);
+        }
+
+        if ($actionId) {
+            $request = $request->withAttribute('action', $actionId);
+        }
+
+        if ($moduleId) {
+            $request = $request->withAttribute('module', $moduleId);
+            $module = Application::createModule($moduleId);
+            $response = $module->handle($request->withAttribute('route_params', $params));
+
+            return (string) $response->getBody();
+        }
+
+        return '';
     }
 
     /**
@@ -178,9 +261,11 @@ abstract class Controller extends Component
      */
     protected function isAjax(): bool
     {
+        $server = $this->request->getServerParams();
+
         if (
-            isset($_SERVER['HTTP_X_REQUESTED_WITH'])
-            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'
+            isset($server['HTTP_X_REQUESTED_WITH'])
+            && strtolower($server['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'
         ) {
             return true;
         }
@@ -189,85 +274,24 @@ abstract class Controller extends Component
     }
 
     /**
-     * Get the request method
-     *
-     * @return string
-     */
-    protected function getMethod(): string
-    {
-        return $_SERVER['REQUEST_METHOD'] ?? '';
-    }
-
-    /**
-     * Check if the request method is GET
-     *
-     * @return boolean
-     */
-    protected function isGet(): bool
-    {
-        return $this->getMethod() === 'GET';
-    }
-
-    /**
-     * Check if the request method is POST
-     *
-     * @return boolean
-     */
-    protected function isPost(): bool
-    {
-        return $this->getMethod() === 'POST';
-    }
-
-    /**
-     * Check if the request method is PUT
-     *
-     * @return boolean
-     */
-    protected function isPut(): bool
-    {
-        return $this->getMethod() === 'PUT';
-    }
-
-    /**
-     * Check if the request method is DELETE
-     *
-     * @return boolean
-     */
-    protected function isDelete(): bool
-    {
-        return $this->getMethod() === 'DELETE';
-    }
-
-    /**
-     * Get the raw input data of the request
-     *
-     * @param int $size The size in bytes of the raw input
-     * @return string|false
-     */
-    protected function rawInput($size = 1024)
-    {
-        $handle = fopen('php://input', 'r');
-        $data = false;
-
-        if (is_resource($handle)) {
-            $data = fread($handle, $size);
-            fclose($handle);
-        }
-
-        return $data;
-    }
-
-    /**
      * Convenient method to return a JSON response
      *
      * @param mixed $data
-     * @return string|false
+     * @return ResponseInterface
      */
     protected function jsonResponse($data)
     {
         $this->layout = false;
-        Application::getInstance()->setHeader('Content-Type', 'application/json');
 
-        return json_encode($data);
+        $json = json_encode($data);
+
+        if ($json === false) {
+            throw new RuntimeException('JSON encoding error'); // @codeCoverageIgnore
+        }
+
+        $body = (new StreamFactory())->createStream($json);
+
+        return $this->response->withHeader('Content-Type', 'application/json')
+                              ->withBody($body);
     }
 }

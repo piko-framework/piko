@@ -12,10 +12,8 @@ class TestController extends \piko\Controller
         return 'TestModule::TestController::indexAction';
     }
 
-    public function errorAction()
+    public function errorAction(\Throwable $exception)
     {
-        $exception = Piko::get('exception');
-
         if ($exception instanceof \Throwable) {
             return $exception->getMessage();
         }
