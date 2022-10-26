@@ -1,6 +1,6 @@
 <?php
 namespace tests\modules\test\sub\til;
 
-class SubtilModule extends \piko\Module
+class SubtilModule extends \Piko\Module
 {
 }

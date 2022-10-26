@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace piko;
+namespace Piko;
 
 use HttpSoft\ServerRequest\ServerRequestCreator;
 use Psr\Http\Message\ResponseInterface;
@@ -20,9 +20,9 @@ use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
 use SplQueue;
 use Throwable;
-use piko\Application\BootstrapMiddleware;
-use piko\Application\ErrorHandler;
-use piko\Application\RoutingMiddleware;
+use Piko\Application\BootstrapMiddleware;
+use Piko\Application\ErrorHandler;
+use Piko\Application\RoutingMiddleware;
 
 /**
  * The main application class
@@ -138,7 +138,7 @@ class Application extends Component implements RequestHandlerInterface
         parent::__construct($config);
 
         if (!isset($config['components']['view'])) {
-            $config['components']['view'] = 'piko\View';
+            $config['components']['view'] = 'Piko\View';
         }
 
         if (!isset($config['components']['router'])) {

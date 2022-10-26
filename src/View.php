@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace piko;
+namespace Piko;
 
 use RuntimeException;
 use Exception;

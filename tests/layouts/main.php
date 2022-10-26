@@ -1,8 +1,6 @@
 <?php
-/* @var $this \piko\View */
+/* @var $this \Piko\View */
 /* @var $content string */
-
-use piko\Piko;
 
 ?>
 <!DOCTYPE html>

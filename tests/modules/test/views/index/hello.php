@@ -1,5 +1,5 @@
 <?php
-/* @var $this \piko\View */
+/* @var $this \Piko\View */
 /* @var $name string */
 ?>
 

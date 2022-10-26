@@ -6,7 +6,7 @@ namespace tests\modules\test\models;
  */
 class ContactForm
 {
-    use \piko\ModelTrait;
+    use \Piko\ModelTrait;
 
     public $name = 'tata';
     public $email = '';

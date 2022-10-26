@@ -1,9 +1,7 @@
 <?php
 namespace tests\modules\test\controllers;
 
-use piko\Piko;
-
-class DefaultController extends \piko\Controller
+class DefaultController extends \Piko\Controller
 {
     public $layout = false;
 

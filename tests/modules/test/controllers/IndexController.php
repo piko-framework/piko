@@ -1,10 +1,9 @@
 <?php
 namespace tests\modules\test\controllers;
 
-use piko\Piko;
 use Psr\Http\Message\ServerRequestInterface;
 
-class IndexController extends \piko\Controller
+class IndexController extends \Piko\Controller
 {
     public $layout = false;
 

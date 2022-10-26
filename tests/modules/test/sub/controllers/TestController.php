@@ -2,7 +2,7 @@
 namespace tests\modules\test\sub\controllers;
 
 
-class TestController extends \piko\Controller
+class TestController extends \Piko\Controller
 {
     public $layout = false;
 

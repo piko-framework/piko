@@ -2,8 +2,8 @@
 use PHPUnit\Framework\TestCase;
 
 use tests\modules\test\controllers\IndexController;
-use piko\Piko;
-use piko\Application;
+use Piko\Piko;
+use Piko\Application;
 
 use HttpSoft\Message\ServerRequestFactory;
 use Psr\Http\Message\ServerRequestInterface;

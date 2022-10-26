@@ -1,8 +1,8 @@
 <?php
 use PHPUnit\Framework\TestCase;
 
-use piko\View;
-use piko\Application;
+use Piko\View;
+use Piko\Application;
 
 class ViewTest extends TestCase
 {

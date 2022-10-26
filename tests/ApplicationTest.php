@@ -3,11 +3,11 @@
 use HttpSoft\Message\ServerRequestFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
-use piko\Application;
-use piko\HttpException;
-use piko\Piko;
-use piko\Router;
-use piko\View;
+use Piko\Application;
+use Piko\HttpException;
+use Piko\Piko;
+use Piko\Router;
+use Piko\View;
 
 class ApplicationTest extends TestCase
 {

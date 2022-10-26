@@ -1,9 +1,9 @@
 <?php
 namespace tests\modules\test;
 
-use piko\Piko;
+use Piko\Piko;
 
-class TestModule extends \piko\Module
+class TestModule extends \Piko\Module
 {
     public $modules = [
         'sub' => 'tests\modules\test\sub\SubModule',
