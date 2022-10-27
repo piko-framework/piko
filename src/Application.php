@@ -13,16 +13,18 @@ declare(strict_types=1);
 namespace Piko;
 
 use HttpSoft\ServerRequest\ServerRequestCreator;
+use Piko\Application\BootstrapMiddleware;
+use Piko\Application\ErrorHandler;
+use Piko\Application\RoutingMiddleware;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use InvalidArgumentException;
 use RuntimeException;
 use SplQueue;
 use Throwable;
-use Piko\Application\BootstrapMiddleware;
-use Piko\Application\ErrorHandler;
-use Piko\Application\RoutingMiddleware;
+use piko\Router;
 
 /**
  * The main application class
@@ -114,6 +116,13 @@ class Application extends Component implements RequestHandlerInterface
      * @var string
      */
     public $language = 'en';
+
+    /**
+     * The aliases container.
+     *
+     * @var array<string, string>
+     */
+    protected $aliases = [];
 
     /**
      * @var SplQueue<MiddlewareInterface>
@@ -246,6 +255,48 @@ class Application extends Component implements RequestHandlerInterface
         $middleware = $this->pipeline->dequeue();
 
         return $middleware->process($request, $this);
+    }
+
+    /**
+     * Registers a path alias.
+     *
+     * A path alias is a short name representing a long path (a file path, a URL, etc.)
+     *
+     * @param string $alias The alias name (e.g. "@web"). It must start with a '@' character.
+     * @param string $path the path corresponding to the alias.
+     * @return void
+     * @throws InvalidArgumentException if $path is an invalid alias.
+     * @see Piko::getAlias()
+     */
+    public function setAlias(string $alias, string $path): void
+    {
+        if ($alias[0] != '@') {
+            throw new InvalidArgumentException('Alias must start with the @ character');
+        }
+
+        $this->aliases[$alias] = $path;
+    }
+
+    /**
+     * Translates a path alias into an actual path.
+     *
+     * @param string $alias The alias to be translated.
+     * @return string|bool The path corresponding to the alias. False if the alias is not registered.
+     */
+    public function getAlias(string $alias)
+    {
+        if ($alias[0] != '@') {
+            return $alias;
+        }
+
+        $pos = strpos($alias, '/');
+        $root = $pos === false ? $alias : substr($alias, 0, $pos);
+
+        if (isset($this->aliases[$root])) {
+            return $pos === false ? $this->aliases[$root] : $this->aliases[$root] . substr($alias, $pos);
+        }
+
+        return false;
     }
 
     /**
