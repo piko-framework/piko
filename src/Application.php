@@ -240,7 +240,7 @@ class Application extends Component implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         if ($this->pipeline->count() === 0) {
-            throw  new HttpException(404, 'Not Found');
+            throw new HttpException(404, 'Not Found');
         }
 
         $middleware = $this->pipeline->dequeue();
