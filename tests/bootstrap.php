@@ -2,4 +2,3 @@
 
 $autoloader = require(dirname(__DIR__) . '/vendor/autoload.php');
 $autoloader->addPsr4('tests\\', [__DIR__]);
-$autoloader->addPsr4('Piko\\', [__DIR__ . '/../../Core/src']);
