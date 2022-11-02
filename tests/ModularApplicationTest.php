@@ -101,13 +101,6 @@ class ModularApplicationTest extends TestCase
         $this->assertInstanceOf(ModularApplication::class, $module->getApplication());
     }
 
-    public function testNonRegisterdComponent()
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('DateTime is not registered as component');
-        $this->app->getComponent(DateTime::class);
-    }
-
     public function testDefaultRun()
     {
         $this->expectOutputString('TestModule::TestController::indexAction');
