@@ -207,18 +207,28 @@ class Application implements RequestHandlerInterface
     }
 
     /**
-     * Retrieve a registered component
+     * Retrieve a unique instance of a registered component
      *
-     * @param string $id The component ID
+     * @param string $type The component class
      * @throws RuntimeException If the component is not found
      * @return object
      */
-    public function getComponent(string $id): object
+    public function getComponent(string $type): object
     {
-        if (!isset($this->components[$id])) {
-            throw new RuntimeException(sprintf('%s is not registered as component', $id));
+        if (!isset($this->components[$type])) {
+            throw new RuntimeException(sprintf('%s is not registered as component', $type));
         }
 
-        return is_callable($this->components[$id]) ? $this->components[$id]() : $this->components[$id];
+        $component = $this->components[$type];
+
+        if (is_object($component) && is_a($component, $type)) {
+            return $component;
+        }
+
+        if (is_callable($this->components[$type])) {
+            $this->components[$type] = $this->components[$type]();
+        }
+
+        return $this->components[$type];
     }
 }

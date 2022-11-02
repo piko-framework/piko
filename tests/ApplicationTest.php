@@ -5,8 +5,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Piko\Application;
 use Piko\HttpException;
-use Piko\Router;
-use Piko\View;
 
 class ApplicationTest extends TestCase
 {
@@ -20,8 +18,8 @@ class ApplicationTest extends TestCase
         $this->app = new Application([
             'basePath' => __DIR__,
             'components' => [
-                View::class => [],
-                Router::class => [
+                'Piko\View' => [],
+                'Piko\Router' => [
                     'construct' => [
                         [
                             'routes' => [
@@ -77,6 +75,13 @@ class ApplicationTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('DateTime is not registered as component');
         $this->app->getComponent(DateTime::class);
+    }
+
+    public function testUniqueComponentInstance()
+    {
+        $view1 = $this->app->getComponent('Piko\View');
+        $view2 = $this->app->getComponent('Piko\View');
+        $this->assertSame(spl_object_hash($view1), spl_object_hash($view2));
     }
 
     public function testCustomMiddleware()
