@@ -154,7 +154,11 @@ class ModularApplication extends Application
             throw new RuntimeException("Configuration not found for module {$moduleId}.");
         }
 
-        $module = is_callable($this->modules[$moduleId]) ? $this->modules[$moduleId]() : $this->modules[$moduleId];
+        if (is_callable($this->modules[$moduleId])) {
+            $this->modules[$moduleId] = $this->modules[$moduleId]();
+        }
+
+        $module = $this->modules[$moduleId];
 
         if ($module instanceof Module) {
 

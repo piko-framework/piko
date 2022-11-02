@@ -95,6 +95,13 @@ class ModularApplicationTest extends TestCase
         $this->app->run($this->createRequest('/wrong'));
     }
 
+    public function testUniqueModuleInstance()
+    {
+        $module1 = $this->app->getModule('test');
+        $module2 = $this->app->getModule('test');
+        $this->assertSame(spl_object_hash($module1), spl_object_hash($module2));
+    }
+
     public function testGetApplicationFromModule()
     {
         $module = $this->app->getModule('test');
