@@ -1,8 +1,6 @@
 <?php
 namespace tests\modules\test;
 
-use Piko\Piko;
-
 class TestModule extends \Piko\Module
 {
     public $modules = [
@@ -12,6 +10,6 @@ class TestModule extends \Piko\Module
 
     public function bootstrap()
     {
-        Piko::set('TestModule::bootstrap', true);
+        $this->application->language = 'fr';
     }
 }

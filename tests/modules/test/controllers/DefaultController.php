@@ -9,4 +9,9 @@ class DefaultController extends \Piko\Controller
     {
         return 'TestModule::DefaultController::indexAction';
     }
+
+    public function errorAction($exception)
+    {
+        return $exception->getMessage();
+    }
 }

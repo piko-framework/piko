@@ -4,39 +4,45 @@ use HttpSoft\Message\ServerRequestFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Piko\Application;
+use Piko\Application\BootstrapMiddleware;
+use Piko\Application\RoutingMiddleware;
 use Piko\HttpException;
-use Piko\Piko;
 use Piko\Router;
 use Piko\View;
 
 class ApplicationTest extends TestCase
 {
-    const CONFIG = [
-        'basePath' => __DIR__,
-        'errorRoute' => 'test/test/error',
-        'components' => [
-            'router' => [
-                'class' => 'piko\Router',
-                'routes' => [
-                    '/' => 'test/test/index',
-                    '/user/:id' => 'test/test/index3',
-                    '/location/:lat/:lng/:coordinates' => 'test/test/index4',
-                    '/test/sub/:controller/:action' => 'test/sub/:controller/:action',
-                    '/:module/:controller/:action' => ':module/:controller/:action',
-                ],
-            ]
-        ],
-        'modules' => [
-            'test' => 'tests\modules\test\TestModule',
-        ],
-        'bootstrap' => ['test'],
-    ];
+    /**
+     * @var Application
+     */
+    protected $app;
 
     protected function setUp(): void
     {
-        $_SERVER['SCRIPT_NAME'] = '';
-        $_SERVER['SCRIPT_FILENAME'] = '';
-        $_SERVER['DOCUMENT_ROOT'] = '';
+        $this->app = new Application([
+            'basePath' => __DIR__,
+            'components' => [
+                View::class => [],
+                Router::class => [
+                    'construct' => [
+                        [
+                            'routes' => [
+                                '/' => 'test/test/index',
+                                '/user/:id' => 'test/test/index3',
+                                '/location/:lat/:lng/:coordinates' => 'test/test/index4',
+                                '/test/sub/:controller/:action' => 'test/sub/:controller/:action',
+                                '/:module/:controller/:action' => ':module/:controller/:action',
+                            ],
+                        ]
+                    ]
+                ]
+            ],
+            'modules' => [
+                'test' => 'tests\modules\test\TestModule',
+                'wrong' =>'tests\modules\test\models\ContactForm',
+            ],
+            'bootstrap' => ['test'],
+        ]);
     }
 
     protected function tearDown(): void
@@ -46,8 +52,6 @@ class ApplicationTest extends TestCase
 
     protected function createRequest($uri, $method = 'GET', $serverParams = []): ServerRequestInterface
     {
-        $factory = new ServerRequestFactory();
-
         $defaultServerParams = [
             'SCRIPT_NAME' => '',
             'SCRIPT_FILENAME' => '',
@@ -56,24 +60,17 @@ class ApplicationTest extends TestCase
 
         $serverParams = array_merge($defaultServerParams, $serverParams);
 
-        $request = $factory->createServerRequest($method, $uri, $serverParams);
-
-        return $request;
+        return (new ServerRequestFactory())->createServerRequest($method, $uri, $serverParams);
     }
 
     public function testAppAlias()
     {
-        new Application(self::CONFIG);
-
         $this->assertEquals(__DIR__, Piko::getAlias('@app'));
     }
 
     public function testRunWithEmptyConfiguration()
     {
         $app = new Application([]);
-
-        $this->assertInstanceOf(Router::class, $app->getRouter());
-        $this->assertInstanceOf(View::class, $app->getView());
 
         $this->expectException(HttpException::class);
         $this->expectExceptionMessage('Not Found');
@@ -82,98 +79,139 @@ class ApplicationTest extends TestCase
         $app->run();
     }
 
+    public function testRunWithEmptyConfigurationAndRoutingMiddleware()
+    {
+        $app = new Application([
+            'components' => [
+                Router::class => new Router([])
+            ]
+        ]);
+
+        $app->pipe(new RoutingMiddleware($app));
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage('Not Found');
+        $this->expectExceptionCode(404);
+        $app->run();
+    }
+
     public function testRunWithWrongModuleType()
     {
-        $config = self::CONFIG;
-        $config['modules']['test'] = 'tests\modules\test\models\ContactForm';
-
-        $app = new Application($config);
-
+        $this->app->pipe(new RoutingMiddleware($this->app));
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('module test must be instance of piko\Module');
+        $this->expectExceptionMessage('Module wrong must be instance of \Piko\Module');
+        $this->app->run($this->createRequest('/wrong'));
+    }
 
-        $app->run($this->createRequest('/'));
+    public function testGetApplicationFromModule()
+    {
+        $module = $this->app->getModule('test');
+        $this->assertInstanceOf(Application::class, $module->getApplication());
+    }
+
+    public function testNonRegisterdComponent()
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('DateTime is not registered as component');
+        $this->app->getComponent(DateTime::class);
     }
 
     public function testDefaultRun()
     {
+        $this->app->pipe(new BootstrapMiddleware($this->app));
+        $this->app->pipe(new RoutingMiddleware($this->app));
         $this->expectOutputString('TestModule::TestController::indexAction');
-        (new Application(self::CONFIG))->run($this->createRequest('/'), false);
+        $this->app->run($this->createRequest('/'), false);
 
         // Check if TestModule::bootstrap() has been called
-        $this->assertTrue(Piko::get('TestModule::bootstrap'));
+        $this->assertEquals('fr', $this->app->language);
     }
 
-    public function testMiddleware()
+    public function testCustomMiddleware()
     {
-        $app = new Application(self::CONFIG);
-        $app->pipe(new tests\middleware\TestMiddleware());
-
+        $this->app->pipe(new tests\middleware\TestMiddleware($this->app));
         $this->expectOutputString('Test middleware response');
-        $app->run($this->createRequest('/testmiddleware'), false);
+        $this->app->run($this->createRequest('/testmiddleware'), false);
     }
 
     public function testErrorHandlerUsingWrongException()
     {
-        $app = new Application(self::CONFIG);
-        $app->pipe(new tests\middleware\TestMiddleware());
+        $this->app->pipe(new tests\middleware\TestMiddleware($this->app));
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Exception must be instance of Throwable');
+        $this->app->run($this->createRequest('/testwrongexception'), false);
+    }
+
+    public function testErrorHandlerWithErrorRouteUsingWrongException()
+    {
+        $this->app->errorRoute = 'test/default/error';
+        $this->app->pipe(new tests\middleware\TestMiddleware($this->app));
         $this->expectOutputString('Exception must be instance of Throwable');
-        $app->run($this->createRequest('/testwrongexception'), false);
+        $this->app->run($this->createRequest('/testwrongexception'), false);
     }
 
     public function testRunWithUriParameter()
     {
+        $this->app->pipe(new RoutingMiddleware($this->app));
         $this->expectOutputString('55');
-        (new Application(self::CONFIG))->run($this->createRequest('/user/55'), false);
+        $this->app->run($this->createRequest('/user/55'), false);
     }
 
     public function testRunWithUriParameters()
     {
+        $this->app->pipe(new RoutingMiddleware($this->app));
         $this->expectOutputString('5.33/60.54');
-        (new Application(self::CONFIG))->run($this->createRequest('/location/5.33/60.54/1'), false);
+        $this->app->run($this->createRequest('/location/5.33/60.54/1'), false);
     }
 
     public function testRunWithSubModule()
     {
+        $this->app->pipe(new RoutingMiddleware($this->app));
         $this->expectOutputString('TestModule::SubModule::TestController::indexAction');
-        (new Application(self::CONFIG))->run($this->createRequest('/test/sub/test/index'), false);
+        $this->app->run($this->createRequest('/test/sub/test/index'), false);
     }
 
     public function testDefaultLayout()
     {
+        $this->app->pipe(new RoutingMiddleware($this->app));
         $this->expectOutputRegex('~<!DOCTYPE html>~');
         $this->expectOutputRegex('~TestModule::TestController::index2Action~');
-        (new Application(self::CONFIG))->run($this->createRequest('/test/test/index2'), false);
+        $this->app->run($this->createRequest('/test/test/index2'), false);
     }
 
     public function testUndeclaredModule()
     {
-        $this->expectOutputString('Configuration not found for module blog.');
-        (new Application(self::CONFIG))->run($this->createRequest('/blog'), false);
+        $this->app->pipe(new RoutingMiddleware($this->app));
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Configuration not found for module blog.');
+        $this->app->run($this->createRequest('/blog'), false);
     }
 
     public function testIncompleteRoute1()
     {
+        $this->app->pipe(new RoutingMiddleware($this->app));
         $this->expectOutputString('TestModule::TestController::indexAction');
-        (new Application(self::CONFIG))->run($this->createRequest('/test/test'), false);
+        $this->app->run($this->createRequest('/test/test'), false);
     }
 
     public function testIncompleteRoute2()
     {
+        $this->app->pipe(new RoutingMiddleware($this->app));
         $this->expectOutputString('TestModule::DefaultController::indexAction');
-        (new Application(self::CONFIG))->run($this->createRequest('/test'), false);
+        $this->app->run($this->createRequest('/test'), false);
     }
 
     public function testSubmoduleRoutes1()
     {
+        $this->app->pipe(new RoutingMiddleware($this->app));
         $this->expectOutputString('TestModule::SubModule::TestController::indexAction');
-        (new Application(self::CONFIG))->run($this->createRequest('/test/sub/test/index'), false);
+        $this->app->run($this->createRequest('/test/sub/test/index'), false);
     }
 
     public function testSubmoduleRoutes2()
     {
+        $this->app->pipe(new RoutingMiddleware($this->app));
         $this->expectOutputString('TestModule::SubModule::SubtilModule::TestController::indexAction');
-        (new Application(self::CONFIG))->run($this->createRequest('/test/sub/til/test/index'), false);
+        $this->app->run($this->createRequest('/test/sub/til/test/index'), false);
     }
 
     /**
@@ -182,8 +220,10 @@ class ApplicationTest extends TestCase
      */
     public function testHeaders()
     {
+        $this->app->pipe(new RoutingMiddleware($this->app));
+
         ob_start();
-        (new Application(self::CONFIG))->run($this->createRequest('/test/index/json-response'));
+        $this->app->run($this->createRequest('/test/index/json-response'));
         ob_end_clean();
 
         $headers = xdebug_get_headers();

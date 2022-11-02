@@ -8,10 +8,21 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+use Piko\Application;
 use Piko\Application\ErrorHandler;
 
 final class TestMiddleware implements MiddlewareInterface
 {
+    /**
+     * @var Application
+     */
+    private $application;
+
+    public function __construct(Application $app)
+    {
+        $this->application = $app;
+    }
+
     /**
      * {@inheritDoc}
      * @see \Psr\Http\Server\MiddlewareInterface::process()
@@ -28,7 +39,7 @@ final class TestMiddleware implements MiddlewareInterface
         }
 
         if ($path === '/testwrongexception') {
-            $error = new ErrorHandler();
+            $error = new ErrorHandler($this->application);
             return $error->handle($request->withAttribute('exception', new \DateTime()));
         }
 

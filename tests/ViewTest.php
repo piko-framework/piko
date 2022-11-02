@@ -2,23 +2,14 @@
 use PHPUnit\Framework\TestCase;
 
 use Piko\View;
-use Piko\Application;
+use Piko\View\Event\BeforeRenderEvent;
+use Piko\View\Event\AfterRenderEvent;
 
 class ViewTest extends TestCase
 {
-    /**
-     * {@inheritDoc}
-     * @see \PHPUnit\Framework\TestCase::setUpBeforeClass()
-     */
-    public static function setUpBeforeClass(): void
-    {
-        new Application([]);
-    }
-
-
     public function testRegisterAssets()
     {
-        $view = Application::getInstance()->getView();
+        $view = new View();
         $view->registerJs('$(function(){});');
         $view->registerJs('var test=null;', View::POS_HEAD, 'test');
         $view->registerJsFile('/js/site.js');
@@ -32,14 +23,22 @@ class ViewTest extends TestCase
         $this->assertContains('/js/site-head.js', $view->jsFiles[View::POS_HEAD]);
         $this->assertArrayHasKey('test', $view->js[View::POS_HEAD]);
         $this->assertArrayHasKey('test', $view->jsFiles[View::POS_HEAD]);
+
+        $output = $view->render(__DIR__ . '/layouts/main.php', [
+            'content' => ''
+        ]);
+
+        $this->assertMatchesRegularExpression('#<head>.*(var test=null).*</head>#s', $output);
+        $this->assertMatchesRegularExpression('#<head>.*(js/site-head\.js).*</head>#s', $output);
+        $this->assertMatchesRegularExpression('#<head>.*(body{colo:red}).*</head>#s', $output);
+        $this->assertMatchesRegularExpression('#<head>.*(css/site\.css).*</head>#s', $output);
+        $this->assertMatchesRegularExpression('#<body>.*(\$\(function\(\){}).*</body>#s', $output);
+        $this->assertMatchesRegularExpression('#<body>.*(js/site\.js).*</body>#s', $output);
     }
 
-    /**
-     * @depends testRegisterAssets
-     */
     public function testRegisterCustomHeadString()
     {
-        $view = Application::getInstance()->getView();
+        $view = new View();
 
         $view->head[] = '<!-- HELLO HEAD -->';
 
@@ -53,7 +52,7 @@ class ViewTest extends TestCase
 
     public function testRegisterCustomFooterString()
     {
-        $view = Application::getInstance()->getView();
+        $view = new View();
 
         $view->endBody[] = '<!-- HELLO FOOTER -->';
 
@@ -65,38 +64,29 @@ class ViewTest extends TestCase
         );
     }
 
-    public function testGetUrl()
-    {
-        $view = Application::getInstance()->getView();
-        $this->assertEquals('/site/index/index', $view->getUrl('site/index/index'));
-    }
-
     public function testRenderNotExistentFile()
     {
-        $view = Application::getInstance()->getView();
-
+        $view = new View();
         $this->expectException('RuntimeException');
         $this->expectExceptionMessage('Cannot find the view file for the viewname: not_exist.php');
-
         $view->render('not_exist.php');
     }
 
     public function testRenderException()
     {
-        $view = Application::getInstance()->getView();
-
+        $view = new View();
         $this->expectException('Exception');
         $this->expectExceptionMessage('I cannot be rendered');
-
         $view->render(__DIR__ . '/layouts/exception.php');
     }
 
     public function testViewTheme()
     {
-        $view = Application::getInstance()->getView();
-        $view->themeMap = [
-            __DIR__ . '/layouts' => __DIR__ . '/theme'
-        ];
+        $view = new View([
+            'themeMap' => [
+                __DIR__ . '/layouts' => __DIR__ . '/theme'
+            ]
+        ]);
 
         $this->assertMatchesRegularExpression(
             '#<h1>Main layout override</h1>#',
@@ -108,10 +98,10 @@ class ViewTest extends TestCase
 
     public function testBeforeRender()
     {
-        $view = Application::getInstance()->getView();
-        $view->on('beforeRender', function(&$file, &$model) {
-            $file =  __DIR__ . '/theme/main.php';
-            $model = ['content' => 'testBeforeRender'];
+        $view = new View();
+        $view->on(BeforeRenderEvent::class, function(BeforeRenderEvent $event) {
+            $event->file =  __DIR__ . '/theme/main.php';
+            $event->model = ['content' => 'testBeforeRender'];
         });
 
         $output = $view->render(__DIR__ . '/layouts/main.php', [
@@ -124,9 +114,9 @@ class ViewTest extends TestCase
 
     public function testAfterRender()
     {
-        $view = Application::getInstance()->getView();
-        $view->on('afterRender', function(&$output) {
-            $output .= '<!-- test afterRender -->';
+        $view = new View();
+        $view->on(AfterRenderEvent::class, function(AfterRenderEvent $event) {
+            $event->output .= '<!-- test afterRender -->';
         });
 
         $output = $view->render(__DIR__ . '/layouts/main.php', [

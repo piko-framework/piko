@@ -17,7 +17,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
 use Throwable;
-use piko\Application;
+use Piko\Application;
 
 /**
  * Error handler class.
@@ -27,6 +27,16 @@ use piko\Application;
  */
 final class ErrorHandler implements RequestHandlerInterface
 {
+    /**
+     * @var Application
+     */
+    private $application;
+
+    public function __construct(Application $app)
+    {
+        $this->application = $app;
+    }
+
     /**
      * {@inheritDoc}
      * @see \Psr\Http\Server\RequestHandlerInterface::handle()
@@ -52,7 +62,7 @@ final class ErrorHandler implements RequestHandlerInterface
                            ->withAttribute('controller', $controllerId)
                            ->withAttribute('action', $actionId);
 
-        $module = Application::createModule((string) $moduleId);
+        $module = $this->application->getModule((string) $moduleId);
 
         $response = $module->handle($request);
         $code = $exception->getCode() > 1 ? $exception->getCode() : 500; // 500: Internal server error;

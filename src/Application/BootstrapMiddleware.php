@@ -16,9 +16,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use piko\Application;
-use piko\Module;
-use piko\Piko;
+use Piko\Application;
+use Piko\Module;
 
 /**
  * Bootstrap the application with the modules registered in the
@@ -29,18 +28,26 @@ use piko\Piko;
 final class BootstrapMiddleware implements MiddlewareInterface
 {
     /**
+     * @var Application
+     */
+    private $application;
+
+    public function __construct(Application $app)
+    {
+        $this->application = $app;
+    }
+
+    /**
      * {@inheritDoc}
      * @see \Psr\Http\Server\MiddlewareInterface::process()
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $app = Application::getInstance();
-
-        foreach ($app->bootstrap as $name) {
-            $module = Piko::createObject($app->modules[$name]);
+        foreach ($this->application->bootstrap as $name) {
+            $module = $this->application->getModule($name);
 
             if ($module instanceof Module && method_exists($module, 'bootstrap')) {
-                $module->bootstrap($app);
+                $module->bootstrap();
             }
         }
 

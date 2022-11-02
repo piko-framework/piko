@@ -13,26 +13,26 @@ declare(strict_types=1);
 namespace Piko;
 
 use HttpSoft\ServerRequest\ServerRequestCreator;
-use Piko\Application\BootstrapMiddleware;
 use Piko\Application\ErrorHandler;
-use Piko\Application\RoutingMiddleware;
+use Piko\Application\Event\InitEvent;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use InvalidArgumentException;
 use RuntimeException;
 use SplQueue;
 use Throwable;
-use piko\Router;
 
 /**
  * The main application class
  *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
-class Application extends Component implements RequestHandlerInterface
+class Application implements RequestHandlerInterface
 {
+    use BehaviorTrait;
+    use EventHandlerTrait;
+
     /**
      * The absolute base path of the application.
      *
@@ -63,7 +63,7 @@ class Application extends Component implements RequestHandlerInterface
      * ]
      * ```
      *
-     * @var array<mixed>
+     * @var array<string, string|array<string,mixed>|callable|Module>
      * @see Module To have more informations on module attributes
      */
     public $modules = [];
@@ -79,13 +79,6 @@ class Application extends Component implements RequestHandlerInterface
      * @var array<string>
      */
     public $bootstrap = [];
-
-    /**
-     * The configuration loaded on application instantiation.
-     *
-     * @var array<mixed>
-     */
-    public $config = [];
 
     /**
      * The default layout name without file extension.
@@ -118,6 +111,13 @@ class Application extends Component implements RequestHandlerInterface
     public $language = 'en';
 
     /**
+     * The components container
+     *
+     * @var array<object|callable>
+     */
+    public $components = [];
+
+    /**
      * The aliases container.
      *
      * @var array<string, string>
@@ -139,41 +139,31 @@ class Application extends Component implements RequestHandlerInterface
     /**
      * Constructor
      *
-     * @param array<mixed> $config The application configuration.
+     * @param array<string, mixed> $config The application configuration.
      * @return void
      */
-    public function __construct(array $config)
+    public function __construct(array $config = [])
     {
-        parent::__construct($config);
+        \Piko::configureObject($this, $config);
 
-        if (!isset($config['components']['view'])) {
-            $config['components']['view'] = 'Piko\View';
-        }
-
-        if (!isset($config['components']['router'])) {
-            $config['components']['router'] = 'piko\Router';
-        }
-
-        if (isset($config['components'])) {
-            foreach ($config['components'] as $name => $definition) {
-                // Lasy-loading of component instances
-                Piko::set($name, function () use ($definition) {
-                    return Piko::createObject($definition);
-                });
+        foreach ($this->components as $type => $definition) {
+            if (is_array($definition)) {
+                $this->components[$type] = fn() => \Piko::createObject($type, $definition);
             }
         }
 
-        Piko::setAlias('@app', $this->basePath);
-        Piko::setAlias('@web', $config['baseUrl'] ?? '');
-        Piko::setAlias('@webroot', $config['webroot'] ?? $this->basePath . '/web');
+        foreach ($this->modules as $id => $definition) {
+            if (is_string($definition) || is_array($definition)) {
+                $this->modules[$id] = fn() => \Piko::createObject($definition);
+            }
+        }
 
-        $this->config = $config;
-
+        \Piko::setAlias('@app', $this->basePath);
+        \Piko::setAlias('@web', $config['baseUrl'] ?? ''); // @phpstan-ignore-line
+        \Piko::setAlias('@webroot', $config['webroot'] ?? $this->basePath . '/web'); // @phpstan-ignore-line
         $this->pipeline = new SplQueue();
-
         static::$instance = $this;
-
-        $this->trigger('init');
+        $this->trigger(new InitEvent($this));
     }
 
     /**
@@ -212,13 +202,10 @@ class Application extends Component implements RequestHandlerInterface
             $request = ServerRequestCreator::create();
         }
 
-        $this->pipeline->enqueue(new BootstrapMiddleware());
-        $this->pipeline->enqueue(new RoutingMiddleware());
-
         try {
             $response = $this->handle($request);
         } catch (Throwable $e) {
-            $errorHandler = new ErrorHandler();
+            $errorHandler = new ErrorHandler($this);
             $response = $errorHandler->handle($request->withAttribute('exception', $e));
         }
 
@@ -258,65 +245,19 @@ class Application extends Component implements RequestHandlerInterface
     }
 
     /**
-     * Registers a path alias.
+     * Retrieve a registered component
      *
-     * A path alias is a short name representing a long path (a file path, a URL, etc.)
-     *
-     * @param string $alias The alias name (e.g. "@web"). It must start with a '@' character.
-     * @param string $path the path corresponding to the alias.
-     * @return void
-     * @throws InvalidArgumentException if $path is an invalid alias.
-     * @see Piko::getAlias()
+     * @param string $id The component ID
+     * @throws RuntimeException If the component is not found
+     * @return object
      */
-    public function setAlias(string $alias, string $path): void
+    public function getComponent(string $id): object
     {
-        if ($alias[0] != '@') {
-            throw new InvalidArgumentException('Alias must start with the @ character');
+        if (!isset($this->components[$id])) {
+            throw new RuntimeException(sprintf('%s is not registered as component', $id));
         }
 
-        $this->aliases[$alias] = $path;
-    }
-
-    /**
-     * Translates a path alias into an actual path.
-     *
-     * @param string $alias The alias to be translated.
-     * @return string|bool The path corresponding to the alias. False if the alias is not registered.
-     */
-    public function getAlias(string $alias)
-    {
-        if ($alias[0] != '@') {
-            return $alias;
-        }
-
-        $pos = strpos($alias, '/');
-        $root = $pos === false ? $alias : substr($alias, 0, $pos);
-
-        if (isset($this->aliases[$root])) {
-            return $pos === false ? $this->aliases[$root] : $this->aliases[$root] . substr($alias, $pos);
-        }
-
-        return false;
-    }
-
-    /**
-     * Get the application router instance
-     *
-     * @return Router instance
-     */
-    public function getRouter(): Router
-    {
-        return Piko::get('router');
-    }
-
-    /**
-     * Get the application view instance
-     *
-     * @return View instance
-     */
-    public function getView(): View
-    {
-        return Piko::get('view');
+        return is_callable($this->components[$id]) ? $this->components[$id]() : $this->components[$id];
     }
 
     /**
@@ -353,17 +294,15 @@ class Application extends Component implements RequestHandlerInterface
     }
 
     /**
-     * Create a module instance based on its definition in the configuration
+     * Get a module instance
      *
      * @param string $moduleId The module identifier
      * @throws RuntimeException
      *
      * @return Module instance
      */
-    public static function createModule(string $moduleId): Module
+    public function getModule($moduleId)
     {
-        $app = static::getInstance();
-
         $parts = [];
 
         if (strpos($moduleId, '/') !== false) {
@@ -371,11 +310,11 @@ class Application extends Component implements RequestHandlerInterface
             $moduleId = array_shift($parts);
         }
 
-        if (!isset($app->modules[$moduleId])) {
+        if (!isset($this->modules[$moduleId])) {
             throw new RuntimeException("Configuration not found for module {$moduleId}.");
         }
 
-        $module = Piko::createObject($app->modules[$moduleId]);
+        $module = is_callable($this->modules[$moduleId]) ? $this->modules[$moduleId]() : $this->modules[$moduleId];
 
         if ($module instanceof Module) {
 
@@ -385,9 +324,11 @@ class Application extends Component implements RequestHandlerInterface
                 $module = $module->getModule($moduleId);
             }
 
+            $module->setApplication($this);
+
             return $module;
         }
 
-        throw new RuntimeException("module $moduleId must be instance of piko\Module");
+        throw new RuntimeException("Module $moduleId must be instance of \Piko\Module");
     }
 }

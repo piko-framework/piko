@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Piko;
 
+use Piko\Module\Event\CreateControllerEvent;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -23,8 +24,10 @@ use RuntimeException;
  *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
-abstract class Module extends Component implements RequestHandlerInterface
+abstract class Module implements RequestHandlerInterface
 {
+    use EventHandlerTrait;
+
     /**
      * The module identifier.
      *
@@ -50,14 +53,14 @@ abstract class Module extends Component implements RequestHandlerInterface
     /**
      * Sub modules configuration
      *
-     * @var array<mixed>
+     * @var array<Module|string|array<string, mixed>>
      */
     public $modules = [];
 
     /**
      * The layout directory of the module.
      *
-     * @var string
+     * @var string|null
      */
     public $layoutPath;
 
@@ -77,17 +80,33 @@ abstract class Module extends Component implements RequestHandlerInterface
     private $basePath;
 
     /**
-     * {@inheritDoc}
-     * @see \piko\Component::init()
+     * @var Application
      */
-    protected function init(): void
+    protected $application;
+
+    /**
+     * @param array<string, mixed> $config
+     */
+    public function __construct(array $config = [])
     {
+        \Piko::configureObject($this, $config);
+
         if ($this->controllerNamespace === null) {
             $class = get_class($this);
             if (($pos = strrpos($class, '\\')) !== false) {
                 $this->controllerNamespace = substr($class, 0, $pos) . '\\controllers';
             }
         }
+    }
+
+    public function setApplication(Application $app): void
+    {
+        $this->application = $app;
+    }
+
+    public function getApplication(): Application
+    {
+        return $this->application;
     }
 
     /**
@@ -103,9 +122,17 @@ abstract class Module extends Component implements RequestHandlerInterface
             throw new RuntimeException("Configuration not found for sub module {$moduleId}.");
         }
 
-        $module = Piko::createObject($this->modules[$moduleId]);
+        $module = $this->modules[$moduleId];
 
         if ($module instanceof Module) {
+            return $module;
+        }
+
+        $module = \Piko::createObject($module);
+
+        if ($module instanceof Module) {
+            $this->modules[$moduleId] = $module;
+
             return $module;
         }
 
@@ -127,26 +154,42 @@ abstract class Module extends Component implements RequestHandlerInterface
         return $this->basePath;
     }
 
+    /**
+     * {@inheritDoc}
+     * @see \Psr\Http\Server\RequestHandlerInterface::handle()
+     */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $this->id = $request->getAttribute('module', '');
+        $this->id = $request->getAttribute('module', ''); // @phpstan-ignore-line
         $controllerId = $request->getAttribute('controller', 'default');
-        $controller = $this->createController($controllerId);
+        $controller = $this->createController($controllerId); // @phpstan-ignore-line
 
         // TODO: wrap controller response into a layout
 
         return  $controller->handle($request);
     }
 
+    /**
+     * Create a controller
+     *
+     * @param string $controllerId A controller ID
+     * @return Controller
+     */
     protected function createController(string $controllerId): Controller
     {
         $controllerName = str_replace(' ', '', ucwords(str_replace('-', ' ', $controllerId))) . 'Controller';
         $controllerClass = $this->controllerMap[$controllerId] ?? $this->controllerNamespace . '\\' . $controllerName;
-
         $controller = new $controllerClass();
+
+        if (!$controller instanceof Controller) {
+            throw new RuntimeException(sprintf('%s is not instance of %s', $controllerClass, Controller::class));
+        }
+
         $controller->module = $this;
         $controller->id = $controllerId;
+        $event = new CreateControllerEvent($controller);
+        $this->trigger($event);
 
-        return $controller;
+        return $event->controller;
     }
 }

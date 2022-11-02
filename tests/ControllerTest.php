@@ -2,8 +2,9 @@
 use PHPUnit\Framework\TestCase;
 
 use tests\modules\test\controllers\IndexController;
-use Piko\Piko;
 use Piko\Application;
+use Piko\View;
+use Piko\Router;
 
 use HttpSoft\Message\ServerRequestFactory;
 use Psr\Http\Message\ServerRequestInterface;
@@ -15,46 +16,35 @@ class ControllerTest extends TestCase
      */
     protected $controller;
 
-    const APP_CONFIG = [
-        'basePath' => __DIR__,
-        'components' => [
-            'router' => [
-                'class' => 'piko\Router',
-                'routes' => [
-                    '/' => 'test/test/index',
-                    '/user/:id' => 'test/test/index3',
-                    '/test/sub/til/:controller/:action' => 'test/sub/til/:controller/:action',
-                    '/test/sub/:controller/:action' => 'test/sub/:controller/:action',
-                    '/:module/:controller/:action' => ':module/:controller/:action',
-                ],
-            ]
-        ],
-        'modules' => [
-            'test' => 'tests\modules\test\TestModule',
-        ],
-    ];
-
     protected function setUp(): void
     {
-        Piko::reset();
-        new Application(self::APP_CONFIG);
-
-        $_SERVER['REQUEST_SCHEME'] = 'http';
-        $_SERVER['HTTP_HOST'] = 'localhost';
-
-        $this->controller = new IndexController([
-            'id' => 'index',
-            'layout' => false,
-            'module' => Application::createModule('test'),
+        $app = new Application([
+            'basePath' => __DIR__,
+            'components' => [
+                View::class => new View(),
+                Router::class => new Router([
+                    'routes' => [
+                        '/' => 'test/test/index',
+                    ],
+                ])
+            ],
+            'modules' => [
+                'test' => new tests\modules\test\TestModule()
+            ]
         ]);
+
+        $router = $app->getComponent(Router::class);
+
+        $this->controller = new IndexController();
+        $this->controller->id = 'index';
+        $this->controller->module = $app->getModule('test');
+        $this->controller->layout = false;
+        $this->controller->attachBehavior('getUrl', [$router, 'getUrl']);
     }
 
     protected function createRequest($uri, $method = 'GET', $serverParams = []): ServerRequestInterface
     {
-        $factory = new ServerRequestFactory();
-        $request = $factory->createServerRequest($method, $uri, $serverParams);
-
-        return $request;
+        return (new ServerRequestFactory())->createServerRequest($method, $uri, $serverParams);
     }
 
     public function testUnknownAction()
@@ -65,7 +55,20 @@ class ControllerTest extends TestCase
         $this->controller->handle($request);
     }
 
-    public function testRenderViewWithoutLayout()
+    public function testRenderWithoutViewComponent()
+    {
+        $request = $this->createRequest('/')
+                        ->withAttribute('action', 'say-hello')
+                        ->withAttribute('route_params', ['name' => 'Toto']);
+
+        $app = $this->controller->module->getApplication();
+        unset($app->components[View::class]);
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Piko\View is not registered as component');
+        $this->controller->handle($request);
+    }
+
+    public function testRenderWithoutLayout()
     {
         $request = $this->createRequest('/')
                         ->withAttribute('action', 'say-hello')
@@ -79,13 +82,14 @@ class ControllerTest extends TestCase
         $this->assertMatchesRegularExpression('~<p>Hello Toto</p>~', $body);
     }
 
-    public function testRenderViewWithLayout()
+    public function testRenderWithLayout()
     {
         $request = $this->createRequest('/')
-        ->withAttribute('action', 'say-hello')
-        ->withAttribute('route_params', ['name' => 'Toto', 'layout' => 'main']);
+                        ->withAttribute('action', 'say-hello')
+                        ->withAttribute('route_params', ['name' => 'Toto', 'layout' => 'main']);
 
         $response = $this->controller->handle($request);
+
         $body = (string) $response->getBody();
 
         $this->assertMatchesRegularExpression('~<!DOCTYPE html>~', $body);
@@ -95,7 +99,7 @@ class ControllerTest extends TestCase
     public function testRedirectUsingGetUrl()
     {
         $request = $this->createRequest('/')->withAttribute('action', 'goHome');
-        $response = $this->controller->handle($request);
+        $response =$this->controller->handle($request);
         $values = $response->getHeader('Location');
         $this->assertContains('/', $values);
     }
@@ -138,32 +142,6 @@ class ControllerTest extends TestCase
         $this->assertEquals('ok', $data['status']);
     }
 
-    /*
-    public function testGetMethod()
-    {
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $this->assertEquals('is get', $this->controller->runAction('testGet'));
-    }
-
-    public function testPostMethod()
-    {
-        $_SERVER['REQUEST_METHOD'] = 'POST';
-        $this->assertEquals('is post', $this->controller->runAction('testPost'));
-    }
-
-    public function testPutMethod()
-    {
-        $_SERVER['REQUEST_METHOD'] = 'PUT';
-        $this->assertEquals('is put', $this->controller->runAction('testPut'));
-    }
-
-    public function testDeleteMethod()
-    {
-        $_SERVER['REQUEST_METHOD'] = 'DELETE';
-        $this->assertEquals('is delete', $this->controller->runAction('testDelete'));
-    }
-    */
-
     public function testAjaxRequest()
     {
         $request = $this->createRequest('/', 'POST')->withAttribute('action', 'testAjax');
@@ -177,12 +155,4 @@ class ControllerTest extends TestCase
 
         $this->assertEquals('is ajax', (string) $response->getBody());
     }
-
-    /*
-    public function testRawInput()
-    {
-        $this->assertEquals('', $this->controller->runAction('rawInput'));
-    }
-    */
-
 }

@@ -14,6 +14,8 @@ namespace Piko;
 
 use HttpSoft\Message\Response;
 use HttpSoft\Message\StreamFactory;
+use Piko\Controller\Event\AfterActionEvent;
+use Piko\Controller\Event\BeforeActionEvent;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -27,8 +29,11 @@ use RuntimeException;
  *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
-abstract class Controller extends Component implements RequestHandlerInterface
+abstract class Controller implements RequestHandlerInterface
 {
+    use BehaviorTrait;
+    use EventHandlerTrait;
+
     /**
      * The controller identifier.
      *
@@ -62,6 +67,11 @@ abstract class Controller extends Component implements RequestHandlerInterface
     public $module;
 
     /**
+     * @var View
+     */
+    protected $view;
+
+    /**
      *
      * @var ServerRequestInterface
      */
@@ -73,26 +83,15 @@ abstract class Controller extends Component implements RequestHandlerInterface
      */
     protected $response;
 
-    /**
-     * {@inheritDoc}
-     * @see \piko\Component::init()
-     */
-    protected function init(): void
-    {
-        if (!isset($this->behaviors['getUrl'])) {
-            $this->behaviors['getUrl'] = [Application::getInstance()->getRouter(), 'getUrl'];
-        }
-    }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $this->request = $request;
         $this->response = new Response();
-
         $params = $this->request->getAttribute('route_params', []);
         $actionId = $this->request->getAttribute('action', 'index');
 
-        return $this->runAction($actionId, $params);
+        return $this->runAction($actionId, $params); // @phpstan-ignore-line
     }
 
     /**
@@ -100,20 +99,20 @@ abstract class Controller extends Component implements RequestHandlerInterface
 
      * @param string $id the ID of the action to be executed.
      * @param mixed[] $params An array of request parameters.
-     * @return mixed the result of the action.
+     * @return ResponseInterface the result of the action.
      * @throws RuntimeException if the requested action ID cannot be resolved into an action successfully.
      */
-    private function runAction(string $id, array $params = [])
+    private function runAction(string $id, array $params = []): ResponseInterface
     {
-        $this->trigger('beforeAction', [$this, $id]);
-
+        $beforeEvent = new BeforeActionEvent($this, $params);
+        $this->trigger($beforeEvent);
         $methodName = \lcfirst(str_replace(' ', '', ucwords(str_replace('-', ' ', $id)))) . 'Action';
 
         if (!method_exists($this, $methodName)) {
             throw new RuntimeException("Method \"$methodName\" not found in " . get_called_class());
         }
 
-        $actionParams = $this->getMethodArguments($methodName, $params);
+        $actionParams = $this->getMethodArguments($methodName, $beforeEvent->params);
 
         if (count($actionParams)) {
             // @phpstan-ignore-next-line
@@ -122,14 +121,14 @@ abstract class Controller extends Component implements RequestHandlerInterface
             $response = $this->$methodName();
         }
 
-        $this->trigger('afterAction', [$this, $id, &$response]);
-
-        if ($response instanceof ResponseInterface) {
-
-            return $response;
+        if (!$response instanceof ResponseInterface) {
+            $response = $this->response->withBody((new StreamFactory())->createStream((string) $response));
         }
 
-        return $this->response->withBody((new StreamFactory())->createStream((string) $response));
+        $afterEvent = new AfterActionEvent($this, $response);
+        $this->trigger($afterEvent);
+
+        return $afterEvent->response;
     }
 
     /**
@@ -176,19 +175,21 @@ abstract class Controller extends Component implements RequestHandlerInterface
      */
     protected function render(string $viewName, array $data = []): ResponseInterface
     {
-        $app = Application::getInstance();
+        $app = $this->module->getApplication();
+        $view = $app->getComponent(View::class);
+        $output = '';
 
-        $view = $app->getView();
-        $view->paths[] = $this->getViewPath();
+        if ($view instanceof View) {
+            $view->attachBehavior('getUrl', [$app, 'getUrl']); // @phpstan-ignore-line
+            $view->paths[] = $this->getViewPath();
+            $output = $view->render($viewName, $data);
 
-        $output = $view->render($viewName, $data);
-
-        if ($this->layout !== false) {
-            $layout = $this->layout === null ? $app->defaultLayout : $this->layout;
-            $view = $app->getView();
-            $path = $this->module->layoutPath ?? $app->defaultLayoutPath ;
-            $view->paths[] = $path;
-            $output = $view->render($layout, ['content' => $output]);
+            if ($this->layout !== false) {
+                $layout = $this->layout === null ? $app->defaultLayout : $this->layout;
+                $path = $this->module->layoutPath ?? $app->defaultLayoutPath ;
+                $view->paths[] = $path;
+                $output = $view->render($layout, ['content' => $output]);
+            }
         }
 
         $body = (new StreamFactory())->createStream($output);
@@ -228,7 +229,7 @@ abstract class Controller extends Component implements RequestHandlerInterface
 
         if ($moduleId) {
             $request = $request->withAttribute('module', $moduleId);
-            $module = Application::createModule($moduleId);
+            $module = Application::getInstance()->getModule($moduleId);
             $response = $module->handle($request->withAttribute('route_params', $params));
 
             return (string) $response->getBody();

@@ -14,6 +14,8 @@ class ModuleTest extends TestCase
         $module = new TestModule();
         $subModule = $module->getModule('sub');
         $this->assertInstanceOf(SubModule::class, $subModule);
+        $this->assertSame($subModule, $module->getModule('sub'));
+
         $subtilModule = $subModule->getModule('til');
         $this->assertInstanceOf(SubtilModule::class, $subtilModule);
 
@@ -28,6 +30,20 @@ class ModuleTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('module form must be instance of Module');
         $module->getModule('form');
+    }
+
+    public function testRunWithWrongController()
+    {
+        $factory = new ServerRequestFactory();
+        $request = $factory->createServerRequest('GET', '/')
+                           ->withAttribute('controller', 'wrong');
+
+        $module = new TestModule();
+        $exceptionMsg = 'tests\modules\test\controllers\WrongController is not instance of Piko\Controller';
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage($exceptionMsg);
+        $module->handle($request);
     }
 
     public function testRunWithCustomControllerMap()

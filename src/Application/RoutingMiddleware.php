@@ -16,8 +16,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use piko\Application;
-use piko\Piko;
+use Piko\Application;
+use Piko\Router;
 
 /**
  * Dispatch route to its corresponding module.
@@ -27,30 +27,57 @@ use piko\Piko;
 final class RoutingMiddleware implements MiddlewareInterface
 {
     /**
+     * @var Application
+     */
+    private $application;
+
+    /**
+     * @var Router
+     */
+    private $router;
+
+    public function __construct(Application $app)
+    {
+        $this->application = $app;
+        $router = $this->application->getComponent(Router::class);
+
+        if ($router instanceof Router) {
+            $this->router = $router;
+        }
+    }
+
+    /**
      * {@inheritDoc}
      * @see \Psr\Http\Server\MiddlewareInterface::process()
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $router = Piko::get('router');
-        $router->baseUri = (string) Piko::getAlias('@web');
-        $match = $router->resolve($request->getUri()->getPath());
-        $route = $match->found ? $match->handler : $request->getUri()->getPath();
-        list($moduleId, $controllerId, $actionId) = Application::parseRoute($route);
-
-        if ($controllerId) {
-            $request = $request->withAttribute('controller', $controllerId);
+        if (!$this->router->baseUri) {
+            $this->router->baseUri = (string) \Piko::getAlias('@web');
         }
 
-        if ($actionId) {
-            $request = $request->withAttribute('action', $actionId);
-        }
+        $path = $request->getUri()->getPath();
+        $match = $this->router->resolve($path);
+        $route = $match->found ? $match->handler : $path;
 
-        if ($moduleId) {
-            $request = $request->withAttribute('module', $moduleId);
-            $module = Application::createModule($moduleId);
+        if (is_string($route)) {
 
-            return $module->handle($request->withAttribute('route_params', $match->params));
+            list($moduleId, $controllerId, $actionId) = Application::parseRoute($route);
+
+            if ($controllerId) {
+                $request = $request->withAttribute('controller', $controllerId);
+            }
+
+            if ($actionId) {
+                $request = $request->withAttribute('action', $actionId);
+            }
+
+            if ($moduleId) {
+                $request = $request->withAttribute('module', $moduleId);
+                $module = $this->application->getModule($moduleId);
+
+                return $module->handle($request->withAttribute('route_params', $match->params));
+            }
         }
 
         return $handler->handle($request);

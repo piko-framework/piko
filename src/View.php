@@ -12,8 +12,10 @@ declare(strict_types=1);
 
 namespace Piko;
 
-use RuntimeException;
+use Piko\View\Event\AfterRenderEvent;
+use Piko\View\Event\BeforeRenderEvent;
 use Exception;
+use RuntimeException;
 
 /**
  * Base application view.
@@ -23,8 +25,11 @@ use Exception;
  *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
-class View extends Component
+class View
 {
+    use BehaviorTrait;
+    use EventHandlerTrait;
+
     /**
      * Head position.
      *
@@ -134,7 +139,7 @@ class View extends Component
      * ],
      * ```
      *
-     * @var array<string|array>
+     * @var array<string, string|array<string>>
      */
     public $themeMap = [];
 
@@ -145,11 +150,12 @@ class View extends Component
      */
     public $charset = 'UTF-8';
 
-    protected function init(): void
+    /**
+     * @param array<string, mixed> $config
+     */
+    public function __construct(array $config = [])
     {
-        if (!isset($this->behaviors['getUrl'])) {
-            $this->behaviors['getUrl'] = [Application::getInstance()->getRouter(), 'getUrl'];
-        }
+        \Piko::configureObject($this, $config);
     }
 
     /**
@@ -159,8 +165,6 @@ class View extends Component
      */
     protected function head(): string
     {
-        $this->trigger('beforeHead', [$this]);
-
         if (!empty($this->cssFiles)) {
             foreach ($this->cssFiles as $url) {
                 $this->head[] = '<link href="' . $url . '" rel="stylesheet">';
@@ -175,6 +179,12 @@ class View extends Component
             }
 
             $this->head[] = '</style>';
+        }
+
+        if (!empty($this->jsFiles[self::POS_HEAD])) {
+            foreach ($this->jsFiles[self::POS_HEAD] as $url) {
+                $this->head[] = '<script src="' . $url . '"></script>';
+            }
         }
 
         if (!empty($this->js[self::POS_HEAD])) {
@@ -197,8 +207,6 @@ class View extends Component
      */
     protected function endBody(): string
     {
-        $this->trigger('beforeEndBody', [$this]);
-
         if (!empty($this->jsFiles[self::POS_END])) {
             foreach ($this->jsFiles[self::POS_END] as $url) {
                 $this->endBody[] = '<script src="' . $url . '"></script>';
@@ -291,8 +299,8 @@ class View extends Component
     protected function findFile(string $viewName): string
     {
         foreach ($this->paths as $path) {
-            if (file_exists(Piko::getAlias($path) . '/' . $viewName . '.' . $this->extension)) {
-                return Piko::getAlias($path) . '/' . $viewName . '.' . $this->extension;
+            if (file_exists(\Piko::getAlias($path) . '/' . $viewName . '.' . $this->extension)) {
+                return \Piko::getAlias($path) . '/' . $viewName . '.' . $this->extension;
             }
         }
 
@@ -310,13 +318,13 @@ class View extends Component
         if (!empty($this->themeMap)) {
 
             foreach ($this->themeMap as $from => $tos) {
-                $from = (string) Piko::getAlias($from);
+                $from = (string) \Piko::getAlias($from);
 
                 if (strpos($path, $from) === 0) {
                     $n = strlen($from);
 
                     foreach ((array) $tos as $to) {
-                        $to = Piko::getAlias($to);
+                        $to = \Piko::getAlias($to);
                         $file = $to . substr($path, $n);
                         if (is_file($file)) {
                             return $file;
@@ -344,23 +352,25 @@ class View extends Component
 
         $file = $this->applyTheme($file);
 
-        $this->trigger('beforeRender', [&$file, &$model]);
+        $beforeRenderEvent = new BeforeRenderEvent($this, $file, $model);
+        $this->trigger($beforeRenderEvent);
 
-        extract($model, EXTR_OVERWRITE);
+        extract($beforeRenderEvent->model, EXTR_OVERWRITE);
 
         ob_start();
 
         try {
-            require $file;
-            $output = ob_get_contents();
+            require $beforeRenderEvent->file;
+            $output = (string) ob_get_contents();
         } catch (Exception $e) {
             throw $e;
         } finally {
             ob_end_clean();
         }
 
-        $this->trigger('afterRender', [&$output]);
+        $afterRenderEvent = new AfterRenderEvent($output);
+        $this->trigger($afterRenderEvent);
 
-        return (string) $output;
+        return (string) $afterRenderEvent->output;
     }
 }
