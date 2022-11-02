@@ -10,13 +10,13 @@
 
 declare(strict_types=1);
 
-namespace Piko\Application;
+namespace Piko\ModularApplication;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Piko\Application;
+use Piko\ModularApplication;
 use Piko\Module;
 
 /**
@@ -28,11 +28,11 @@ use Piko\Module;
 final class BootstrapMiddleware implements MiddlewareInterface
 {
     /**
-     * @var Application
+     * @var ModularApplication
      */
     private $application;
 
-    public function __construct(Application $app)
+    public function __construct(ModularApplication $app)
     {
         $this->application = $app;
     }

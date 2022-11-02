@@ -80,7 +80,7 @@ abstract class Module implements RequestHandlerInterface
     private $basePath;
 
     /**
-     * @var Application
+     * @var ModularApplication
      */
     protected $application;
 
@@ -99,12 +99,12 @@ abstract class Module implements RequestHandlerInterface
         }
     }
 
-    public function setApplication(Application $app): void
+    public function setApplication(ModularApplication $app): void
     {
         $this->application = $app;
     }
 
-    public function getApplication(): Application
+    public function getApplication(): ModularApplication
     {
         return $this->application;
     }

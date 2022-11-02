@@ -10,13 +10,13 @@
 
 declare(strict_types=1);
 
-namespace Piko\Application;
+namespace Piko\ModularApplication;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Piko\Application;
+use Piko\ModularApplication;
 use Piko\Router;
 
 /**
@@ -27,7 +27,7 @@ use Piko\Router;
 final class RoutingMiddleware implements MiddlewareInterface
 {
     /**
-     * @var Application
+     * @var ModularApplication
      */
     private $application;
 
@@ -36,7 +36,7 @@ final class RoutingMiddleware implements MiddlewareInterface
      */
     private $router;
 
-    public function __construct(Application $app)
+    public function __construct(ModularApplication $app)
     {
         $this->application = $app;
         $router = $this->application->getComponent(Router::class);
@@ -62,7 +62,7 @@ final class RoutingMiddleware implements MiddlewareInterface
 
         if (is_string($route)) {
 
-            list($moduleId, $controllerId, $actionId) = Application::parseRoute($route);
+            list($moduleId, $controllerId, $actionId) = ModularApplication::parseRoute($route);
 
             if ($controllerId) {
                 $request = $request->withAttribute('controller', $controllerId);

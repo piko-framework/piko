@@ -10,6 +10,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 use Piko\Application;
 use Piko\Application\ErrorHandler;
+use Piko\ModularApplication\ErrorHandler as ModularErrorHandler;
 
 final class TestMiddleware implements MiddlewareInterface
 {
@@ -40,6 +41,11 @@ final class TestMiddleware implements MiddlewareInterface
 
         if ($path === '/testwrongexception') {
             $error = new ErrorHandler($this->application);
+            return $error->handle($request->withAttribute('exception', new \DateTime()));
+        }
+
+        if ($path === '/testmodularwrongexception') {
+            $error = new ModularErrorHandler($this->application);
             return $error->handle($request->withAttribute('exception', new \DateTime()));
         }
 

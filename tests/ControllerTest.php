@@ -2,7 +2,7 @@
 use PHPUnit\Framework\TestCase;
 
 use tests\modules\test\controllers\IndexController;
-use Piko\Application;
+use Piko\ModularApplication;
 use Piko\View;
 use Piko\Router;
 
@@ -18,7 +18,7 @@ class ControllerTest extends TestCase
 
     protected function setUp(): void
     {
-        $app = new Application([
+        $app = new ModularApplication([
             'basePath' => __DIR__,
             'components' => [
                 View::class => new View(),
@@ -29,7 +29,7 @@ class ControllerTest extends TestCase
                 ])
             ],
             'modules' => [
-                'test' => new tests\modules\test\TestModule()
+                'test' =>'tests\modules\test\TestModule'
             ]
         ]);
 

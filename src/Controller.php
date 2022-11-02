@@ -215,21 +215,20 @@ abstract class Controller implements RequestHandlerInterface
      */
     protected function forward(string $route, array $params = []): string
     {
-        list($moduleId, $controllerId, $actionId) = Application::parseRoute($route);
-
-        $request = $this->request;
-
-        if ($controllerId) {
-            $request = $request->withAttribute('controller', $controllerId);
-        }
-
-        if ($actionId) {
-            $request = $request->withAttribute('action', $actionId);
-        }
+        list($moduleId, $controllerId, $actionId) = ModularApplication::parseRoute($route);
 
         if ($moduleId) {
-            $request = $request->withAttribute('module', $moduleId);
-            $module = Application::getInstance()->getModule($moduleId);
+            $request = $this->request->withAttribute('module', $moduleId);
+            $module = $this->module->getApplication()->getModule($moduleId);
+
+            if ($controllerId) {
+                $request = $request->withAttribute('controller', $controllerId);
+            }
+
+            if ($actionId) {
+                $request = $request->withAttribute('action', $actionId);
+            }
+
             $response = $module->handle($request->withAttribute('route_params', $params));
 
             return (string) $response->getBody();

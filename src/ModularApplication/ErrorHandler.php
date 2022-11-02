@@ -10,15 +10,14 @@
 
 declare(strict_types=1);
 
-namespace Piko\Application;
+namespace Piko\ModularApplication;
 
-use HttpSoft\Message\Response;
-use Piko\Application;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
 use Throwable;
+use Piko\ModularApplication;
 
 /**
  * Error handler class.
@@ -28,6 +27,16 @@ use Throwable;
  */
 final class ErrorHandler implements RequestHandlerInterface
 {
+    /**
+     * @var ModularApplication
+     */
+    private $application;
+
+    public function __construct(ModularApplication $app)
+    {
+        $this->application = $app;
+    }
+
     /**
      * {@inheritDoc}
      * @see \Psr\Http\Server\RequestHandlerInterface::handle()
@@ -40,12 +49,24 @@ final class ErrorHandler implements RequestHandlerInterface
             throw new RuntimeException('Exception must be instance of Throwable');
         }
 
-        $errorRoute = Application::getInstance()->errorRoute;
+        $errorRoute = $this->application->errorRoute;
 
         if ($errorRoute === '') {
             throw $exception;
         }
 
-        return (new Response())->withStatus($exception->getCode(), $exception->getMessage());
+        list($moduleId, $controllerId, $actionId) = ModularApplication::parseRoute($errorRoute);
+
+        $request = $request->withAttribute('route_params', ['exception' => $exception])
+                           ->withAttribute('module', $moduleId)
+                           ->withAttribute('controller', $controllerId)
+                           ->withAttribute('action', $actionId);
+
+        $module = $this->application->getModule((string) $moduleId);
+
+        $response = $module->handle($request);
+        $code = $exception->getCode() > 1 ? $exception->getCode() : 500; // 500: Internal server error;
+
+        return $response->withStatus($code, $exception->getMessage());
     }
 }
