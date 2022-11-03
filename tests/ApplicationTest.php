@@ -90,12 +90,4 @@ class ApplicationTest extends TestCase
         $this->expectOutputString('Test middleware response');
         $this->app->run($this->createRequest('/testmiddleware'), false);
     }
-
-    public function testErrorHandlerUsingWrongException()
-    {
-        $this->app->pipe(new tests\middleware\TestMiddleware($this->app));
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Exception must be instance of Throwable');
-        $this->app->run($this->createRequest('/testwrongexception'), false);
-    }
 }

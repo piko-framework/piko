@@ -129,7 +129,7 @@ class ModularApplicationTest extends TestCase
         $this->app->pipe(new tests\middleware\TestMiddleware($this->app));
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Exception must be instance of Throwable');
-        $this->app->run($this->createRequest('/testmodularwrongexception'), false);
+        $this->app->run($this->createRequest('/test-error-handler-wrong-exception'), false);
     }
 
     public function testErrorHandlerWithErrorRouteUsingWrongException()
@@ -137,7 +137,7 @@ class ModularApplicationTest extends TestCase
         $this->app->errorRoute = 'test/default/error';
         $this->app->pipe(new tests\middleware\TestMiddleware($this->app));
         $this->expectOutputString('Exception must be instance of Throwable');
-        $this->app->run($this->createRequest('/testmodularwrongexception'), false);
+        $this->app->run($this->createRequest('/test-error-handler-wrong-exception'), false);
     }
 
     public function testRunWithUriParameter()

@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace Piko;
 
 use HttpSoft\ServerRequest\ServerRequestCreator;
-use Piko\Application\ErrorHandler;
 use Piko\Application\Event\InitEvent;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -165,7 +164,7 @@ class Application implements RequestHandlerInterface
             $response = $this->handle($request);
         } catch (Throwable $e) {
             if (!$this->errorHandler instanceof RequestHandlerInterface) {
-                $this->errorHandler = new ErrorHandler();
+                throw $e;
             }
 
             $response = $this->errorHandler->handle($request->withAttribute('exception', $e));

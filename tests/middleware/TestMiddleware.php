@@ -7,10 +7,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-
 use Piko\Application;
-use Piko\Application\ErrorHandler;
-use Piko\ModularApplication\ErrorHandler as ModularErrorHandler;
+use Piko\ModularApplication\ErrorHandler;
 
 final class TestMiddleware implements MiddlewareInterface
 {
@@ -39,13 +37,8 @@ final class TestMiddleware implements MiddlewareInterface
             return $response->withBody($body);
         }
 
-        if ($path === '/testwrongexception') {
+        if ($path === '/test-error-handler-wrong-exception') {
             $error = new ErrorHandler($this->application);
-            return $error->handle($request->withAttribute('exception', new \DateTime()));
-        }
-
-        if ($path === '/testmodularwrongexception') {
-            $error = new ModularErrorHandler($this->application);
             return $error->handle($request->withAttribute('exception', new \DateTime()));
         }
 
