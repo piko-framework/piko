@@ -36,8 +36,8 @@ class ModularApplicationTest extends TestCase
                 ]
             ],
             'modules' => [
-                'test' => 'tests\modules\test\TestModule',
-                'wrong' =>'tests\modules\test\models\ContactForm',
+                'test' => 'Piko\Tests\modules\test\TestModule',
+                'wrong' =>'Piko\Tests\modules\test\models\ContactForm',
             ],
             'bootstrap' => ['test'],
         ]);
@@ -119,14 +119,14 @@ class ModularApplicationTest extends TestCase
 
     public function testCustomMiddleware()
     {
-        $this->app->pipe(new tests\middleware\TestMiddleware($this->app));
+        $this->app->pipe(new Piko\Tests\middleware\TestMiddleware($this->app));
         $this->expectOutputString('Test middleware response');
         $this->app->run($this->createRequest('/testmiddleware'), false);
     }
 
     public function testErrorHandlerUsingWrongException()
     {
-        $this->app->pipe(new tests\middleware\TestMiddleware($this->app));
+        $this->app->pipe(new Piko\Tests\middleware\TestMiddleware($this->app));
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Exception must be instance of Throwable');
         $this->app->run($this->createRequest('/test-error-handler-wrong-exception'), false);
@@ -135,7 +135,7 @@ class ModularApplicationTest extends TestCase
     public function testErrorHandlerWithErrorRouteUsingWrongException()
     {
         $this->app->errorRoute = 'test/default/error';
-        $this->app->pipe(new tests\middleware\TestMiddleware($this->app));
+        $this->app->pipe(new Piko\Tests\middleware\TestMiddleware($this->app));
         $this->expectOutputString('Exception must be instance of Throwable');
         $this->app->run($this->createRequest('/test-error-handler-wrong-exception'), false);
     }

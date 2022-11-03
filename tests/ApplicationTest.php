@@ -86,7 +86,7 @@ class ApplicationTest extends TestCase
 
     public function testCustomMiddleware()
     {
-        $this->app->pipe(new tests\middleware\TestMiddleware($this->app));
+        $this->app->pipe(new Piko\Tests\middleware\TestMiddleware($this->app));
         $this->expectOutputString('Test middleware response');
         $this->app->run($this->createRequest('/testmiddleware'), false);
     }

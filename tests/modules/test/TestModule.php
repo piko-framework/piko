@@ -1,11 +1,11 @@
 <?php
-namespace tests\modules\test;
+namespace Piko\Tests\modules\test;
 
 class TestModule extends \Piko\Module
 {
     public $modules = [
-        'sub' => 'tests\modules\test\sub\SubModule',
-        'form' => 'tests\modules\test\models\ContactForm', // Not a module
+        'sub' => 'Piko\Tests\modules\test\sub\SubModule',
+        'form' => 'Piko\Tests\modules\test\models\ContactForm', // Not a module
     ];
 
     public function bootstrap()

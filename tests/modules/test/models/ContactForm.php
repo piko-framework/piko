@@ -1,5 +1,5 @@
 <?php
-namespace tests\modules\test\models;
+namespace Piko\Tests\modules\test\models;
 
 /**
  * This is a class reprensenting a contact form.

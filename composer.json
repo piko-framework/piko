@@ -24,7 +24,12 @@
   },
   "autoload" : {
     "psr-4" : {
-      "Piko\\" : "src"
+      "Piko\\" : "src/"
+    }
+  },
+  "autoload-dev" : {
+    "psr-4" : {
+      "Piko\\Tests\\" : "tests/"
     }
   },
   "require-dev" : {

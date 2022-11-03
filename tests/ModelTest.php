@@ -1,6 +1,6 @@
 <?php
 use PHPUnit\Framework\TestCase;
-use tests\modules\test\models\ContactForm;
+use Piko\Tests\modules\test\models\ContactForm;
 
 class ModelTest extends TestCase
 {

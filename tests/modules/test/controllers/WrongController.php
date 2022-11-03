@@ -1,5 +1,5 @@
 <?php
-namespace tests\modules\test\controllers;
+namespace Piko\Tests\modules\test\controllers;
 
 class WrongController
 {

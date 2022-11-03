@@ -1,7 +1,7 @@
 <?php
 use PHPUnit\Framework\TestCase;
 
-use tests\modules\test\controllers\IndexController;
+use Piko\Tests\modules\test\controllers\IndexController;
 use Piko\ModularApplication;
 use Piko\View;
 use Piko\Router;
@@ -34,7 +34,7 @@ class ControllerTest extends TestCase
                 ])
             ],
             'modules' => [
-                'test' =>'tests\modules\test\TestModule'
+                'test' =>'Piko\Tests\modules\test\TestModule'
             ]
         ]);
 

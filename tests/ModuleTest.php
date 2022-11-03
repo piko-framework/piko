@@ -1,9 +1,9 @@
 <?php
 use PHPUnit\Framework\TestCase;
 
-use tests\modules\test\TestModule;
-use tests\modules\test\sub\SubModule;
-use tests\modules\test\sub\til\SubtilModule;
+use Piko\Tests\modules\test\TestModule;
+use Piko\Tests\modules\test\sub\SubModule;
+use Piko\Tests\modules\test\sub\til\SubtilModule;
 
 use HttpSoft\Message\ServerRequestFactory;
 use Piko\ModularApplication;
@@ -40,7 +40,7 @@ class ModuleTest extends TestCase
                            ->withAttribute('controller', 'wrong');
 
         $module = new TestModule();
-        $exceptionMsg = 'tests\modules\test\controllers\WrongController is not instance of Piko\Controller';
+        $exceptionMsg = 'Piko\Tests\modules\test\controllers\WrongController is not instance of Piko\Controller';
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage($exceptionMsg);
@@ -56,7 +56,7 @@ class ModuleTest extends TestCase
 
         $module = new TestModule([
             'controllerMap' => [
-                'blog' => 'tests\modules\test\controllers\TestController'
+                'blog' => 'Piko\Tests\modules\test\controllers\TestController'
             ]
         ]);
         $module->setApplication(new ModularApplication());

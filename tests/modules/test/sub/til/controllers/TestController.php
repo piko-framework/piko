@@ -1,6 +1,5 @@
 <?php
-namespace tests\modules\test\sub\til\controllers;
-
+namespace Piko\Tests\modules\test\sub\til\controllers;
 
 class TestController extends \Piko\Controller
 {

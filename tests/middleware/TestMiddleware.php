@@ -1,5 +1,5 @@
 <?php
-namespace tests\middleware;
+namespace Piko\Tests\middleware;
 
 use HttpSoft\Message\Response;
 use HttpSoft\Message\StreamFactory;
