@@ -179,13 +179,12 @@ abstract class Module implements RequestHandlerInterface
     {
         $controllerName = str_replace(' ', '', ucwords(str_replace('-', ' ', $controllerId))) . 'Controller';
         $controllerClass = $this->controllerMap[$controllerId] ?? $this->controllerNamespace . '\\' . $controllerName;
-        $controller = new $controllerClass();
+        $controller = new $controllerClass($this);
 
         if (!$controller instanceof Controller) {
             throw new RuntimeException(sprintf('%s is not instance of %s', $controllerClass, Controller::class));
         }
 
-        $controller->module = $this;
         $controller->id = $controllerId;
         $event = new CreateControllerEvent($controller);
         $this->trigger($event);

@@ -64,7 +64,7 @@ abstract class Controller implements RequestHandlerInterface
      *
      * @var Module
      */
-    public $module;
+    protected $module;
 
     /**
      * @var View
@@ -83,6 +83,10 @@ abstract class Controller implements RequestHandlerInterface
      */
     protected $response;
 
+    public function __construct(Module $module)
+    {
+        $this->module = $module;
+    }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {

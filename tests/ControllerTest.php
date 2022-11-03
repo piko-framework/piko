@@ -16,9 +16,14 @@ class ControllerTest extends TestCase
      */
     protected $controller;
 
+    /**
+     * @var ModularApplication
+     */
+    protected $app;
+
     protected function setUp(): void
     {
-        $app = new ModularApplication([
+        $this->app = new ModularApplication([
             'basePath' => __DIR__,
             'components' => [
                 View::class => new View(),
@@ -33,11 +38,10 @@ class ControllerTest extends TestCase
             ]
         ]);
 
-        $router = $app->getComponent(Router::class);
+        $router = $this->app->getComponent(Router::class);
 
-        $this->controller = new IndexController();
+        $this->controller = new IndexController($this->app->getModule('test'));
         $this->controller->id = 'index';
-        $this->controller->module = $app->getModule('test');
         $this->controller->layout = false;
         $this->controller->attachBehavior('getUrl', [$router, 'getUrl']);
     }
@@ -61,8 +65,7 @@ class ControllerTest extends TestCase
                         ->withAttribute('action', 'say-hello')
                         ->withAttribute('route_params', ['name' => 'Toto']);
 
-        $app = $this->controller->module->getApplication();
-        unset($app->components[View::class]);
+        unset($this->app->components[View::class]);
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Piko\View is not registered as component');
         $this->controller->handle($request);
