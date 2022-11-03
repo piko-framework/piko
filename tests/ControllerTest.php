@@ -104,6 +104,16 @@ class ControllerTest extends TestCase
         $this->assertContains('/', $values);
     }
 
+    public function testRedirectUsingGetUrlWithoutRouter()
+    {
+        unset($this->app->components[Router::class]);
+        $request = $this->createRequest('/')->withAttribute('action', 'goHome');
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('getUrl method needs that Piko\Router is registered as application component');
+        $controller = new IndexController($this->app->getModule('test'));
+        $controller->handle($request);
+    }
+
     public function testForward()
     {
         $this->controller->setRequest($this->createRequest('/'));
