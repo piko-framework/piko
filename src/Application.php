@@ -94,13 +94,6 @@ class Application implements RequestHandlerInterface
     protected $pipeline = null;
 
     /**
-     * Application Instance
-     *
-     * @var Application
-     */
-    public static $instance;
-
-    /**
      * Constructor
      *
      * @param array<string, mixed> $config The application configuration.
@@ -120,18 +113,7 @@ class Application implements RequestHandlerInterface
         \Piko::setAlias('@web', $config['baseUrl'] ?? ''); // @phpstan-ignore-line
         \Piko::setAlias('@webroot', $config['webroot'] ?? $this->basePath . '/web'); // @phpstan-ignore-line
         $this->pipeline = new SplQueue();
-        static::$instance = $this;
         $this->trigger(new InitEvent($this));
-    }
-
-    /**
-     * Get the application instance
-     *
-     * @return Application
-     */
-    public static function getInstance(): Application
-    {
-        return static::$instance;
     }
 
     /**
