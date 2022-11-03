@@ -6,6 +6,7 @@ use tests\modules\test\sub\SubModule;
 use tests\modules\test\sub\til\SubtilModule;
 
 use HttpSoft\Message\ServerRequestFactory;
+use Piko\ModularApplication;
 
 class ModuleTest extends TestCase
 {
@@ -58,6 +59,7 @@ class ModuleTest extends TestCase
                 'blog' => 'tests\modules\test\controllers\TestController'
             ]
         ]);
+        $module->setApplication(new ModularApplication());
 
         $response = $module->handle($request);
 

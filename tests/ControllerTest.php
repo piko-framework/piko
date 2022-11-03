@@ -38,12 +38,9 @@ class ControllerTest extends TestCase
             ]
         ]);
 
-        $router = $this->app->getComponent(Router::class);
-
         $this->controller = new IndexController($this->app->getModule('test'));
         $this->controller->id = 'index';
         $this->controller->layout = false;
-        $this->controller->attachBehavior('getUrl', [$router, 'getUrl']);
     }
 
     protected function createRequest($uri, $method = 'GET', $serverParams = []): ServerRequestInterface

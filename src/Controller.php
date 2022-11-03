@@ -86,6 +86,24 @@ abstract class Controller implements RequestHandlerInterface
     public function __construct(Module $module)
     {
         $this->module = $module;
+
+        if (!isset($this->behaviors['getUrl'])) {
+            $app = $this->module->getApplication();
+
+            try {
+                $router = $app->getComponent(Router::class);
+
+                if ($router instanceof Router) {
+                    $this->behaviors['getUrl'] = [$router, 'getUrl'];
+                }
+            } catch (RuntimeException $e) {
+                $this->behaviors['getUrl'] = function (string $route, array $params = [], $absolute = false) {
+                    throw new RuntimeException(
+                        'getUrl method needs that Piko\Router is registered as application component'
+                    );
+                };
+            }
+        }
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -184,7 +202,7 @@ abstract class Controller implements RequestHandlerInterface
         $output = '';
 
         if ($view instanceof View) {
-            $view->attachBehavior('getUrl', [$app, 'getUrl']); // @phpstan-ignore-line
+            $view->attachBehavior('getUrl', [$this, 'getUrl']);
             $view->paths[] = $this->getViewPath();
             $output = $view->render($viewName, $data);
 
