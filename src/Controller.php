@@ -156,7 +156,27 @@ abstract class Controller implements RequestHandlerInterface
         }
 
         if (!$response instanceof ResponseInterface) {
-            $response = $this->response->withBody((new StreamFactory())->createStream((string) $response));
+
+            if (!is_string($response)) {
+                $response = (string) $response;
+            }
+
+            $view = $this->getView();
+
+            if ($view instanceof View) {
+                $app = $this->module->getApplication();
+                $view->attachBehavior('getUrl', [$this, 'getUrl']);
+
+                if ($this->layout !== false) {
+                    $layout = $this->layout === null ? $app->defaultLayout : $this->layout;
+                    $path = $this->module->layoutPath ?? $app->defaultLayoutPath ;
+                    $view->paths[] = $path;
+                    $response = $view->render($layout, ['content' => $response]);
+                }
+            }
+
+            $response = $this->response->withBody((new StreamFactory())->createStream($response));
+
         }
 
         $afterEvent = new AfterActionEvent($this, $response);
@@ -205,41 +225,35 @@ abstract class Controller implements RequestHandlerInterface
      *
      * @param string $viewName The view file name.
      * @param array<mixed> $data An array of data (name-value pairs) to transmit to the view.
-     * @return ResponseInterface
+     * @return string
      */
-    protected function render(string $viewName, array $data = []): ResponseInterface
+    protected function render(string $viewName, array $data = []): string
     {
-        $app = $this->module->getApplication();
         $view = $this->getView();
-        $output = '';
 
-        if ($view instanceof View) {
-            $view->attachBehavior('getUrl', [$this, 'getUrl']);
-            $view->paths[] = $this->getViewPath();
-            $output = $view->render($viewName, $data);
-
-            if ($this->layout !== false) {
-                $layout = $this->layout === null ? $app->defaultLayout : $this->layout;
-                $path = $this->module->layoutPath ?? $app->defaultLayoutPath ;
-                $view->paths[] = $path;
-                $output = $view->render($layout, ['content' => $output]);
-            }
+        if (!$view instanceof View) {
+            throw new RuntimeException('No view component registered in the application');
         }
 
-        $body = (new StreamFactory())->createStream($output);
+        $view->paths[] = $this->getViewPath();
 
-        return $this->response->withBody($body);
+        return $view->render($viewName, $data);
     }
 
     /**
      * Returns the application View component
      *
-     * @return View
+     * @return View|null
      */
-    protected function getView(): View
+    protected function getView(): ?View
     {
         if ($this->view === null) {
-            $view = $this->module->getApplication()->getComponent(View::class);
+            try {
+                $view = $this->module->getApplication()->getComponent(View::class);
+            } catch (RuntimeException $e) {
+                return null;
+            }
+
             assert($view instanceof View);
             $this->view = $view;
         }

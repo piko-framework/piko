@@ -64,7 +64,7 @@ class ControllerTest extends TestCase
 
         unset($this->app->components[View::class]);
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Piko\View is not registered as component');
+        $this->expectExceptionMessage('No view component registered in the application');
         $this->controller->handle($request);
     }
 
