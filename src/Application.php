@@ -96,18 +96,20 @@ class Application implements RequestHandlerInterface
     /**
      * Constructor
      *
-     * @param array<string, mixed> $config The application configuration.
+     * @param array<string, string|array<string, mixed>> $config The application configuration.
      * @return void
      */
     public function __construct(array $config = [])
     {
-        \Piko::configureObject($this, $config);
-
-        foreach ($this->components as $type => $definition) {
-            if (is_array($definition)) {
-                $this->components[$type] = fn() => \Piko::createObject($type, $definition);
+        if (isset($config['components']) && is_array($config['components'])) {
+            foreach ($config['components'] as $type => $definition) {
+                if (class_exists($type) && is_array($definition)) {
+                    $config['components'][$type] = fn() => \Piko::createObject($type, $definition);
+                }
             }
         }
+
+        \Piko::configureObject($this, $config);
 
         \Piko::setAlias('@app', $this->basePath);
         \Piko::setAlias('@web', $config['baseUrl'] ?? ''); // @phpstan-ignore-line

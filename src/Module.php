@@ -53,7 +53,7 @@ abstract class Module implements RequestHandlerInterface
     /**
      * Sub modules configuration
      *
-     * @var array<Module|string|array<string, mixed>>
+     * @var array<Module|class-string|array<class-string, mixed>>
      */
     public $modules = [];
 

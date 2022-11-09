@@ -68,14 +68,14 @@ class ModularApplication extends Application
     /**
      * Constructor
      *
-     * @param array<string, mixed> $config The application configuration.
+     * @param array<string, string|array<string, mixed>> $config The application configuration.
      * @return void
      */
     public function __construct(array $config = [])
     {
         if (isset($config['modules']) && is_array($config['modules'])) {
             foreach ($config['modules'] as $id => $definition) {
-                if (is_string($definition) || is_array($definition)) {
+                if ((is_string($definition) && class_exists($definition)) || is_array($definition)) {
                     $this->modules[$id] = fn() => \Piko::createObject($definition);
                 }
             }
