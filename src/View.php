@@ -204,7 +204,7 @@ class View
          $beforeEvent = $this->trigger(new BeforeHeadEvent());
          assert($beforeEvent instanceof BeforeHeadEvent);
          $afterEvent = $this->trigger(new AfterHeadEvent());
-         assert($afterEvent instanceof BeforeHeadEvent);
+         assert($afterEvent instanceof AfterHeadEvent);
 
          return $beforeEvent->output . implode("\n", $this->head) . $afterEvent->output;
     }
