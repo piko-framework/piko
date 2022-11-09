@@ -104,6 +104,18 @@ abstract class Controller implements RequestHandlerInterface
                 };
             }
         }
+
+        $this->init();
+    }
+
+    /**
+     * Method called at the end of the constructor.
+     * This could be overriden in inherited classes.
+     *
+     * @return void
+     */
+    protected function init(): void
+    {
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
