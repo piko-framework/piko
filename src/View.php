@@ -12,7 +12,11 @@ declare(strict_types=1);
 
 namespace Piko;
 
+use Piko\View\Event\AfterEndBodyEvent;
+use Piko\View\Event\AfterHeadEvent;
 use Piko\View\Event\AfterRenderEvent;
+use Piko\View\Event\BeforeEndBodyEvent;
+use Piko\View\Event\BeforeHeadEvent;
 use Piko\View\Event\BeforeRenderEvent;
 use Exception;
 use RuntimeException;
@@ -197,7 +201,12 @@ class View
             $this->head[] = '</script>';
         }
 
-        return implode("\n", $this->head);
+         $beforeEvent = $this->trigger(new BeforeHeadEvent());
+         assert($beforeEvent instanceof BeforeHeadEvent);
+         $afterEvent = $this->trigger(new AfterHeadEvent());
+         assert($afterEvent instanceof BeforeHeadEvent);
+
+         return $beforeEvent->output . implode("\n", $this->head) . $afterEvent->output;
     }
 
     /**
@@ -223,7 +232,12 @@ class View
             $this->endBody[] = '</script>' . PHP_EOL;
         }
 
-        return implode("\n", $this->endBody);
+        $beforeEvent = $this->trigger(new BeforeEndBodyEvent());
+        assert($beforeEvent instanceof BeforeEndBodyEvent);
+        $afterEvent = $this->trigger(new AfterEndBodyEvent());
+        assert($afterEvent instanceof AfterEndBodyEvent);
+
+        return $beforeEvent->output . implode("\n", $this->endBody) . $afterEvent->output;
     }
 
     /**
