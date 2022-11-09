@@ -210,7 +210,7 @@ abstract class Controller implements RequestHandlerInterface
     protected function render(string $viewName, array $data = []): ResponseInterface
     {
         $app = $this->module->getApplication();
-        $view = $app->getComponent(View::class);
+        $view = $this->getView();
         $output = '';
 
         if ($view instanceof View) {
@@ -229,6 +229,22 @@ abstract class Controller implements RequestHandlerInterface
         $body = (new StreamFactory())->createStream($output);
 
         return $this->response->withBody($body);
+    }
+
+    /**
+     * Returns the application View component
+     *
+     * @return View
+     */
+    protected function getView(): View
+    {
+        if ($this->view === null) {
+            $view = $this->module->getApplication()->getComponent(View::class);
+            assert($view instanceof View);
+            $this->view = $view;
+        }
+
+        return $this->view;
     }
 
     /**
