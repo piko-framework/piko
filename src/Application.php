@@ -103,7 +103,9 @@ class Application implements RequestHandlerInterface
     {
         if (isset($config['components']) && is_array($config['components'])) {
             foreach ($config['components'] as $type => $definition) {
-                if (class_exists($type) && is_array($definition)) {
+                if (is_array($definition) && isset($definition['class'])) {
+                    $config['components'][$type] = fn() => \Piko::createObject($definition);
+                } elseif (class_exists($type) && is_array($definition)) {
                     $config['components'][$type] = fn() => \Piko::createObject($type, $definition);
                 }
             }
