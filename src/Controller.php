@@ -14,6 +14,7 @@ namespace Piko;
 
 use HttpSoft\Message\Response;
 use HttpSoft\Message\StreamFactory;
+use Piko\View\ViewInterface;
 use Piko\Controller\Event\AfterActionEvent;
 use Piko\Controller\Event\BeforeActionEvent;
 use Psr\Http\Message\ResponseInterface;
@@ -67,7 +68,7 @@ abstract class Controller implements RequestHandlerInterface
     protected $module;
 
     /**
-     * @var View
+     * @var ViewInterface
      */
     protected $view;
 
@@ -231,11 +232,13 @@ abstract class Controller implements RequestHandlerInterface
     {
         $view = $this->getView();
 
-        if (!$view instanceof View) {
-            throw new RuntimeException('No view component registered in the application');
+        if (!$view instanceof ViewInterface) {
+            throw new RuntimeException('View must be instance of Piko\View\ViewInterface');
         }
 
-        $view->paths[] = $this->getViewPath();
+        if ($view instanceof View) {
+            $view->paths[] = $this->getViewPath();
+        }
 
         return $view->render($viewName, $data);
     }
@@ -243,18 +246,22 @@ abstract class Controller implements RequestHandlerInterface
     /**
      * Returns the application View component
      *
-     * @return View|null
+     * @return ViewInterface|null
      */
-    protected function getView(): ?View
+    protected function getView(): ?ViewInterface
     {
         if ($this->view === null) {
             try {
                 $view = $this->module->getApplication()->getComponent(View::class);
             } catch (RuntimeException $e) {
-                return null;
+                try {
+                    $view = $this->module->getApplication()->getComponent(ViewInterface::class);
+                } catch (RuntimeException $e) {
+                    return null;
+                }
             }
 
-            assert($view instanceof View);
+            assert($view instanceof ViewInterface);
             $this->view = $view;
         }
 

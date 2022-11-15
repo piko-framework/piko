@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Piko;
 
+use Piko\View\ViewInterface;
 use Piko\View\Event\AfterEndBodyEvent;
 use Piko\View\Event\AfterHeadEvent;
 use Piko\View\Event\AfterRenderEvent;
@@ -29,7 +30,7 @@ use RuntimeException;
  *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
-class View
+class View implements ViewInterface
 {
     use BehaviorTrait;
     use EventHandlerTrait;

@@ -2,10 +2,11 @@
 use PHPUnit\Framework\TestCase;
 
 use Piko\Tests\modules\test\controllers\IndexController;
+use Piko\Tests\lib\CustomView;
 use Piko\ModularApplication;
 use Piko\View;
+use Piko\View\ViewInterface;
 use Piko\Router;
-
 use HttpSoft\Message\ServerRequestFactory;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -64,8 +65,34 @@ class ControllerTest extends TestCase
 
         unset($this->app->components[View::class]);
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('No view component registered in the application');
+        $this->expectExceptionMessage('View must be instance of Piko\View\ViewInterface');
         $this->controller->handle($request);
+    }
+
+    public function testRenderWithCustomViewComponent()
+    {
+        $app = new ModularApplication([
+            'basePath' => __DIR__,
+            'components' => [
+                ViewInterface::class => [
+                    'class' => CustomView::class,
+                    'viewPath' => __DIR__ . '/modules/test/views/index'
+                ],
+            ],
+            'modules' => [
+                'test' =>'Piko\Tests\modules\test\TestModule'
+            ]
+        ]);
+
+        $controller = new IndexController($app->getModule('test'));
+
+        $request = $this->createRequest('/')
+                        ->withAttribute('action', 'say-hello')
+                        ->withAttribute('route_params', ['name' => 'Toto']);
+
+        $response = $controller->handle($request);
+        $body = (string) $response->getBody();
+        $this->assertMatchesRegularExpression('~<p>Hello Toto</p>~', $body);
     }
 
     public function testRenderWithoutLayout()
