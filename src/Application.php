@@ -82,13 +82,6 @@ class Application implements RequestHandlerInterface
     public $errorHandler;
 
     /**
-     * The aliases container.
-     *
-     * @var array<string, string>
-     */
-    protected $aliases = [];
-
-    /**
      * @var SplQueue<MiddlewareInterface>
      */
     protected $pipeline = null;
