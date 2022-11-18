@@ -79,7 +79,7 @@ class Application implements RequestHandlerInterface
     /**
      * @var RequestHandlerInterface
      */
-    protected $errorHandler;
+    public $errorHandler;
 
     /**
      * The aliases container.
