@@ -166,7 +166,6 @@ abstract class Controller implements RequestHandlerInterface
 
             if ($view instanceof View) {
                 $app = $this->module->getApplication();
-                $view->attachBehavior('getUrl', [$this, 'getUrl']);
 
                 if ($this->layout !== false) {
                     $layout = $this->layout === null ? $app->defaultLayout : $this->layout;
@@ -253,6 +252,8 @@ abstract class Controller implements RequestHandlerInterface
         if ($this->view === null) {
             try {
                 $view = $this->module->getApplication()->getComponent(View::class);
+                assert($view instanceof View);
+                $view->attachBehavior('getUrl', [$this, 'getUrl']);
             } catch (RuntimeException $e) {
                 try {
                     $view = $this->module->getApplication()->getComponent(ViewInterface::class);
