@@ -123,7 +123,10 @@ abstract class Controller implements RequestHandlerInterface
     {
         $this->request = $request;
         $this->response = new Response();
-        $params = $this->request->getAttribute('route_params', []);
+        $params = array_merge(
+            (array) $this->request->getAttribute('route_params', []),
+            $this->request->getQueryParams()
+        );
         $actionId = $this->request->getAttribute('action', 'index');
 
         return $this->runAction($actionId, $params); // @phpstan-ignore-line
