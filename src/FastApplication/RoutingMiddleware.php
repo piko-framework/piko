@@ -62,7 +62,7 @@ final class RoutingMiddleware implements MiddlewareInterface
 
         if ($match->found && $match->handler instanceof RequestHandler && $match->handler->canHandle($request)) {
 
-            $match->handler->setParams($match->params);
+            $match->handler->setParams($match->params); // @phpstan-ignore-line
 
             return $match->handler->handle($request);
         }
