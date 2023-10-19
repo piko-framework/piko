@@ -142,7 +142,7 @@ abstract class Controller implements RequestHandlerInterface
      */
     private function runAction(string $id, array $params = []): ResponseInterface
     {
-        $beforeEvent = new BeforeActionEvent($this, $params);
+        $beforeEvent = new BeforeActionEvent($this, $id, $params);
         $this->trigger($beforeEvent);
         $methodName = \lcfirst(str_replace(' ', '', ucwords(str_replace('-', ' ', $id)))) . 'Action';
 
@@ -182,7 +182,7 @@ abstract class Controller implements RequestHandlerInterface
 
         }
 
-        $afterEvent = new AfterActionEvent($this, $response);
+        $afterEvent = new AfterActionEvent($this, $id, $response);
         $this->trigger($afterEvent);
 
         return $afterEvent->response;

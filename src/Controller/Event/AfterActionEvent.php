@@ -29,6 +29,13 @@ class AfterActionEvent extends Event
     public $controller;
 
     /**
+     * The action id
+     *
+     * @var string
+     */
+    public $actionId;
+
+    /**
      * The action method response
      *
      * @var ResponseInterface
@@ -39,9 +46,10 @@ class AfterActionEvent extends Event
      * @param Controller $controller A controller instance
      * @param ResponseInterface $response The action method response
      */
-    public function __construct(Controller $controller, ResponseInterface $response)
+    public function __construct(Controller $controller, string $actionId, ResponseInterface $response)
     {
         $this->controller = $controller;
+        $this->actionId = $actionId;
         $this->response = $response;
     }
 }

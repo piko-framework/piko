@@ -28,6 +28,13 @@ class BeforeActionEvent extends Event
     public $controller;
 
     /**
+     * The action id
+     *
+     * @var string
+     */
+    public $actionId;
+
+    /**
      * The action parameters
      *
      * @var array<string, mixed>
@@ -38,9 +45,10 @@ class BeforeActionEvent extends Event
      * @param Controller $controller A controller instance
      * @param array<string, mixed> $params The action parameters
      */
-    public function __construct(Controller $controller, array $params = [])
+    public function __construct(Controller $controller, string $actionId, array $params = [])
     {
         $this->controller = $controller;
+        $this->actionId = $actionId;
         $this->params = $params;
     }
 }
