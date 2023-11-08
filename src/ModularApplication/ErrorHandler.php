@@ -69,9 +69,9 @@ final class ErrorHandler implements RequestHandlerInterface
         $code = $exception->getCode();
 
         if (is_string($code) && !is_numeric($code)) {
-            $code = 500; // Internal server error;
+            $code = 500; // @codeCoverageIgnore
         } elseif (is_int($code) && ($code < 100 || $code > 599)) {
-            $code = 500;
+            $code = 500; // Internal server error
         }
 
         return $response->withStatus($code, $exception->getMessage());
