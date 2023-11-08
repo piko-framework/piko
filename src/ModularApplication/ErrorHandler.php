@@ -65,7 +65,14 @@ final class ErrorHandler implements RequestHandlerInterface
         $module = $this->application->getModule((string) $moduleId);
 
         $response = $module->handle($request);
-        $code = $exception->getCode() > 1 ? $exception->getCode() : 500; // 500: Internal server error;
+
+        $code = $exception->getCode();
+
+        if (is_string($code) && !is_numeric($code)) {
+            $code = 500; // Internal server error;
+        } elseif (is_int($code) && ($code < 100 || $code > 599)) {
+            $code = 500;
+        }
 
         return $response->withStatus($code, $exception->getMessage());
     }
