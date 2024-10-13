@@ -33,7 +33,12 @@ class ModularApplicationTest extends TestCase
                             ],
                         ]
                     ]
-                ]
+                ],
+                PDO::class => [
+                    'construct' => [
+                        'sqlite::memory:'
+                    ]
+                ],
             ],
             'modules' => [
                 'test' => 'Piko\Tests\modules\test\TestModule',
@@ -194,6 +199,19 @@ class ModularApplicationTest extends TestCase
     {
         $this->expectOutputString('TestModule::SubModule::SubtilModule::TestController::indexAction');
         $this->app->run($this->createRequest('/test/sub/til/test/index'), false);
+    }
+
+    public function testDependencyInjectionOptional()
+    {
+        $this->expectOutputString('TestModule::User2Controller::indexAction');
+        $this->app->run($this->createRequest('/test/user2/index'));
+    }
+
+    public function testDependencyInjectionFail()
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessageMatches('~Cannot be instanciated because the component~');
+        $this->app->run($this->createRequest('/test/user/index'));
     }
 
     /**

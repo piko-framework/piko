@@ -65,7 +65,7 @@ abstract class Controller implements RequestHandlerInterface
      *
      * @var Module
      */
-    protected $module;
+    public $module;
 
     /**
      * @var ViewInterface
@@ -83,41 +83,6 @@ abstract class Controller implements RequestHandlerInterface
      * @var ResponseInterface
      */
     protected $response;
-
-    public function __construct(Module $module)
-    {
-        $this->module = $module;
-
-        if (!isset($this->behaviors['getUrl'])) {
-            $app = $this->module->getApplication();
-
-            try {
-                $router = $app->getComponent(Router::class);
-
-                if ($router instanceof Router) {
-                    $this->behaviors['getUrl'] = [$router, 'getUrl'];
-                }
-            } catch (RuntimeException $e) {
-                $this->behaviors['getUrl'] = function (string $route, array $params = [], $absolute = false) {
-                    throw new RuntimeException(
-                        'getUrl method needs that Piko\Router is registered as application component'
-                    );
-                };
-            }
-        }
-
-        $this->init();
-    }
-
-    /**
-     * Method called at the end of the constructor.
-     * This could be overriden in inherited classes.
-     *
-     * @return void
-     */
-    protected function init(): void
-    {
-    }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
@@ -243,6 +208,37 @@ abstract class Controller implements RequestHandlerInterface
         }
 
         return $view->render($viewName, $data);
+    }
+
+    /**
+     * Converts a given modular route into its corresponding URL.
+     *
+     * This method is useful for generating URLs dynamically, based on the specified
+     * route and optional parameters. The route should follow the format:
+     * {moduleId}/{ControllerId}/{ActionId}.
+     *
+     * @param string $route The modular route in the format {moduleId}/{ControllerId}/{ActionId}.
+     *                      This string determines which module, controller, and action to target.
+     * @param array<string> $params An optional associative array of query parameters to append
+     *                              to the generated URL. Each key-value pair represents a parameter
+     *                              name and its corresponding value.
+     * @param bool $absolute An optional boolean flag indicating whether the generated URL should be
+     *                       absolute (including protocol and host) or relative. Defaults to false,
+     *                       meaning a relative URL will be returned.
+     * @return string The resulting URL that corresponds to the provided route and parameters.
+     */
+    protected function getUrl(string $route, array $params = [], $absolute = false): string
+    {
+        $router = $this->module->getApplication()->getComponent(Router::class);
+
+        if (!$router instanceof Router) {
+            throw new RuntimeException(
+                'getUrl method needs that Piko\Router is registered as application component'
+            );
+
+        }
+
+        return $router->getUrl($route, $params, $absolute);
     }
 
     /**

@@ -32,14 +32,21 @@ class ControllerTest extends TestCase
                     'routes' => [
                         '/' => 'test/test/index',
                     ],
-                ])
+                ]),
+                PDO::class => [
+                    'construct' => [
+                        'sqlite::memory:'
+                    ]
+                ],
             ],
+
             'modules' => [
                 'test' =>'Piko\Tests\modules\test\TestModule'
             ]
         ]);
 
-        $this->controller = new IndexController($this->app->getModule('test'));
+        $this->controller = new IndexController();
+        $this->controller->module = $this->app->getModule('test');
         $this->controller->id = 'index';
         $this->controller->layout = false;
     }
@@ -84,7 +91,9 @@ class ControllerTest extends TestCase
             ]
         ]);
 
-        $controller = new IndexController($app->getModule('test'));
+        $controller = new IndexController();
+        $controller->module = $app->getModule('test');
+        $controller->id = 'index';
 
         $request = $this->createRequest('/')
                         ->withAttribute('action', 'say-hello')
@@ -136,8 +145,20 @@ class ControllerTest extends TestCase
         unset($this->app->components[Router::class]);
         $request = $this->createRequest('/')->withAttribute('action', 'goHome');
         $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Piko\Router is not registered as component');
+        $controller = new IndexController();
+        $controller->module = $this->app->getModule('test');
+        $controller->handle($request);
+    }
+
+    public function testRedirectUsingGetUrlWithWrongRouter()
+    {
+        $this->app->components[Router::class] = new DateTime();
+        $request = $this->createRequest('/')->withAttribute('action', 'goHome');
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('getUrl method needs that Piko\Router is registered as application component');
-        $controller = new IndexController($this->app->getModule('test'));
+        $controller = new IndexController();
+        $controller->module = $this->app->getModule('test');
         $controller->handle($request);
     }
 

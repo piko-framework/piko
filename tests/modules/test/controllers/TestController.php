@@ -5,6 +5,13 @@ class TestController extends \Piko\Controller
 {
     public $layout = false;
 
+    protected \PDO $db;
+
+    public function __construct(\PDO $db)
+    {
+        $this->db = $db;
+    }
+
     public function indexAction()
     {
         return 'TestModule::TestController::indexAction';

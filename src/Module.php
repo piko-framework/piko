@@ -12,12 +12,14 @@ declare(strict_types=1);
 
 namespace Piko;
 
-use Piko\Module\Event\CreateControllerEvent;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionClass;
 use RuntimeException;
+use ReflectionNamedType;
+use ReflectionParameter;
+use Psr\Http\Message\ResponseInterface;
+use Piko\Module\Event\CreateControllerEvent;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * Module is the base class for classes containing module logic.
@@ -179,13 +181,57 @@ abstract class Module implements RequestHandlerInterface
     {
         $controllerName = str_replace(' ', '', ucwords(str_replace('-', ' ', $controllerId))) . 'Controller';
         $controllerClass = $this->controllerMap[$controllerId] ?? $this->controllerNamespace . '\\' . $controllerName;
-        $controller = new $controllerClass($this);
+
+        if (!class_exists($controllerClass)) {
+            throw new RuntimeException("Controller class '{$controllerClass}' does not exist.");
+        }
+
+        $controller = null;
+        $reflection = new ReflectionClass($controllerClass);
+        $constructor = $reflection->getConstructor();
+
+        if ($constructor) {
+            $parameters = $constructor->getParameters();
+
+            // Dépendencies injection
+            $args = array_map(function (ReflectionParameter $param) {
+
+                $type = $param->getType();
+
+                try {
+                    $type = $type instanceof ReflectionNamedType ? $type->getName() : '';
+
+                    return $this->getApplication()->getComponent($type);
+                } catch (RuntimeException $e) {
+
+                    if ($param->isOptional()) {
+                        return null;
+                    }
+
+                    $reflectionClass = $param->getDeclaringClass();
+
+                    // @phpstan-ignore-next-line
+                    $msg = "The controller {$reflectionClass->getName()} "
+                         . "Cannot be instanciated because the component $type was not found "
+                         . "and cannot be assigned to the constructor argument \${$param->getName()}.";
+
+                    throw new RuntimeException($msg);
+                }
+            },
+            $parameters);
+
+            $controller = $reflection->newInstanceArgs($args);
+        } else {
+            $controller = new $controllerClass();
+        }
 
         if (!$controller instanceof Controller) {
             throw new RuntimeException(sprintf('%s is not instance of %s', $controllerClass, Controller::class));
         }
 
         $controller->id = $controllerId;
+        $controller->module = $this;
+
         $event = new CreateControllerEvent($controller);
         $this->trigger($event);
 

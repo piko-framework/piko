@@ -59,7 +59,15 @@ class ModuleTest extends TestCase
                 'blog' => 'Piko\Tests\modules\test\controllers\TestController'
             ]
         ]);
-        $module->setApplication(new ModularApplication());
+        $module->setApplication(new ModularApplication([
+            'components' => [
+                PDO::class => [
+                    'construct' => [
+                        'sqlite::memory:'
+                    ]
+                ],
+            ],
+        ]));
 
         $response = $module->handle($request);
 
@@ -67,5 +75,24 @@ class ModuleTest extends TestCase
             'TestModule::TestController::indexAction',
             (string) $response->getBody()
         );
+    }
+
+    public function testRunWithNonExistentController()
+    {
+        $factory = new ServerRequestFactory();
+        $request = $factory->createServerRequest('GET', '/')
+                           ->withAttribute('controller', 'blog')
+                           ->withAttribute('action', 'index');
+
+        $module = new TestModule([
+            'controllerMap' => [
+                'blog' => 'Piko\Tests\modules\test\controllers\TestNonExistentController'
+            ]
+        ]);
+        $exceptionMsg = 'Controller class \'Piko\Tests\modules\test\controllers\TestNonExistentController\' does not exist.';
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage($exceptionMsg);
+        $module->handle($request);
     }
 }
