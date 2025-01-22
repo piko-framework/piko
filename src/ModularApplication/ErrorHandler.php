@@ -68,9 +68,15 @@ final class ErrorHandler implements RequestHandlerInterface
 
         $code = $exception->getCode();
 
-        if (is_string($code) && !is_numeric($code)) {
+        if (is_string($code) && is_numeric($code)) {
+            // Some exceptions, such as PDOException, may return the code as a string.
+            // Refer to the discussion on this issue: https://github.com/php/php-src/issues/9529
+            $code = (int) $code; // @codeCoverageIgnore
+        } elseif (is_string($code) && !is_numeric($code)) {
             $code = 500; // @codeCoverageIgnore
-        } elseif (is_int($code) && ($code < 100 || $code > 599)) {
+        }
+
+        if ($code < 100 || $code > 599) {
             $code = 500; // Internal server error
         }
 
