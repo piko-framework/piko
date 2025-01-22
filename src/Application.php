@@ -110,7 +110,6 @@ class Application implements RequestHandlerInterface
         \Piko::setAlias('@web', $config['baseUrl'] ?? ''); // @phpstan-ignore-line
         \Piko::setAlias('@webroot', $config['webroot'] ?? $this->basePath . '/web'); // @phpstan-ignore-line
         $this->pipeline = new SplQueue();
-        $this->trigger(new InitEvent($this));
     }
 
     /**
@@ -138,6 +137,8 @@ class Application implements RequestHandlerInterface
         if (!$request) {
             $request = ServerRequestCreator::create();
         }
+
+        $this->trigger(new InitEvent($this));
 
         try {
             $response = $this->handle($request);
