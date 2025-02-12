@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace Piko;
 
 use Piko\ModularApplication\ErrorHandler;
-use Piko\ModularApplication\BootstrapMiddleware;
 use Piko\ModularApplication\RoutingMiddleware;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
@@ -94,7 +93,14 @@ class ModularApplication extends Application
      */
     public function run(ServerRequestInterface $request = null, bool $emitHeaders = true)
     {
-        $this->pipe(new BootstrapMiddleware($this));
+        foreach ($this->bootstrap as $name) {
+            $module = $this->getModule($name);
+
+            if ($module instanceof Module && method_exists($module, 'bootstrap')) {
+                $module->bootstrap();
+            }
+        }
+
         $this->pipe(new RoutingMiddleware($this));
 
         parent::run($request, $emitHeaders);
