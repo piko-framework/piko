@@ -227,7 +227,7 @@ abstract class Controller implements RequestHandlerInterface
      *                       meaning a relative URL will be returned.
      * @return string The resulting URL that corresponds to the provided route and parameters.
      */
-    protected function getUrl(string $route, array $params = [], $absolute = false): string
+    public function getUrl(string $route, array $params = [], $absolute = false): string
     {
         $router = $this->module->getApplication()->getComponent(Router::class);
 
