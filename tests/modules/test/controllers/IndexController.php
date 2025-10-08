@@ -35,7 +35,7 @@ class IndexController extends \Piko\Controller
 
     public function goHomeAction()
     {
-        $this->redirect($this->getUrl('test/test/index'));
+        return $this->redirect($this->getUrl('test/test/index'));
     }
 
     public function homeTestAction()

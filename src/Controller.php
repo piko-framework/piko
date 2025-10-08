@@ -269,10 +269,12 @@ abstract class Controller implements RequestHandlerInterface
      * Set a response redirection
      *
      * @param string $url The url to redirect
+     *
+     * @return ResponseInterface
      */
-    protected function redirect(string $url): void
+    protected function redirect(string $url): ResponseInterface
     {
-        $this->response = $this->response->withHeader('Location', $url);
+        return $this->response->withHeader('Location', $url);
     }
 
     /**
