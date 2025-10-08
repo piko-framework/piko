@@ -93,14 +93,6 @@ class ModularApplication extends Application
      */
     public function run(ServerRequestInterface $request = null, bool $emitHeaders = true)
     {
-        foreach ($this->bootstrap as $name) {
-            $module = $this->getModule($name);
-
-            if ($module instanceof Module && method_exists($module, 'bootstrap')) {
-                $module->bootstrap();
-            }
-        }
-
         $this->pipe(new RoutingMiddleware($this));
 
         parent::run($request, $emitHeaders);

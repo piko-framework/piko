@@ -17,6 +17,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Piko\ModularApplication;
+use Piko\Module;
 use Piko\Router;
 
 /**
@@ -54,6 +55,15 @@ final class RoutingMiddleware implements MiddlewareInterface
     {
         if (!$this->router->baseUri) {
             $this->router->baseUri = (string) \Piko::getAlias('@web');
+        }
+
+        // Optional modules app bootstraping
+        foreach ($this->application->bootstrap as $name) {
+            $module = $this->application->getModule($name);
+
+            if ($module instanceof Module && method_exists($module, 'bootstrap')) {
+                $module->{'bootstrap'}();
+            }
         }
 
         $path = $request->getUri()->getPath();
