@@ -25,9 +25,6 @@ use RuntimeException;
 /**
  * Controller is the base class for classes containing controller logic.
  *
- * @method string getUrl(string $route, array<mixed> $params, boolean $absolute) Convenient method to convert
- * a route to an url (see Router::getUrl()). This method is implemented as a behavior and can be overriden.
- *
  * @author Sylvain PHILIP <contact@sphilip.com>
  */
 abstract class Controller implements RequestHandlerInterface
@@ -316,7 +313,7 @@ abstract class Controller implements RequestHandlerInterface
      *
      * @return string the directory containing the view files for this controller.
      */
-    protected function getViewPath()
+    protected function getViewPath(): string
     {
         if (empty($this->viewPath)) {
             $this->viewPath = $this->module->getBasePath()
@@ -328,7 +325,7 @@ abstract class Controller implements RequestHandlerInterface
 
     /**
      * Check if the request is AJAX
-     * @return boolean
+     * @return bool
      */
     protected function isAjax(): bool
     {
