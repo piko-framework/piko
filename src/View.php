@@ -301,7 +301,7 @@ class View implements ViewInterface
      */
     public function escape(string $string): string
     {
-        return htmlentities($string, ENT_COMPAT | ENT_HTML5, $this->charset);
+        return htmlspecialchars($string, ENT_COMPAT | ENT_HTML5, $this->charset);
     }
 
     /**
