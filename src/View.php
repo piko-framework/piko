@@ -296,12 +296,12 @@ class View implements ViewInterface
     /**
      * Escape HTML special characters.
      *
-     * @param string $string Dirty html.
+     * @param string|null $string Dirty html.
      * @return string Clean html.
      */
-    public function escape(string $string): string
+    public function escape(?string $string): string
     {
-        return htmlspecialchars($string, ENT_COMPAT | ENT_HTML5, $this->charset);
+        return $string === null ? '' : htmlspecialchars($string, ENT_COMPAT | ENT_HTML5, $this->charset);
     }
 
     /**
