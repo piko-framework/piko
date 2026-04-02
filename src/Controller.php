@@ -364,4 +364,16 @@ abstract class Controller implements RequestHandlerInterface
         return $this->response->withHeader('Content-Type', 'application/json')
                               ->withBody($body);
     }
+
+    /**
+     * Create an object and resolve constructor dependencies from application components.
+     *
+     * @param class-string $class
+     * @param array<string, mixed> $overrides Constructor argument overrides indexed by parameter name.
+     * @return object
+     */
+    protected function create(string $class, array $overrides = []): object
+    {
+        return $this->module->createObject($class, $overrides);
+    }
 }

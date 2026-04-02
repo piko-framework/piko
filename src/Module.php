@@ -186,44 +186,7 @@ abstract class Module implements RequestHandlerInterface
             throw new RuntimeException("Controller class '{$controllerClass}' does not exist.");
         }
 
-        $controller = null;
-        $reflection = new ReflectionClass($controllerClass);
-        $constructor = $reflection->getConstructor();
-
-        if ($constructor) {
-            $parameters = $constructor->getParameters();
-
-            // Dépendencies injection
-            $args = array_map(function (ReflectionParameter $param) {
-
-                $type = $param->getType();
-
-                try {
-                    $type = $type instanceof ReflectionNamedType ? $type->getName() : '';
-
-                    return $this->getApplication()->getComponent($type);
-                } catch (RuntimeException $e) {
-
-                    if ($param->isOptional()) {
-                        return null;
-                    }
-
-                    $reflectionClass = $param->getDeclaringClass();
-
-                    // @phpstan-ignore-next-line
-                    $msg = "The controller {$reflectionClass->getName()} "
-                         . "Cannot be instanciated because the component $type was not found "
-                         . "and cannot be assigned to the constructor argument \${$param->getName()}.";
-
-                    throw new RuntimeException($msg);
-                }
-            },
-            $parameters);
-
-            $controller = $reflection->newInstanceArgs($args);
-        } else {
-            $controller = new $controllerClass();
-        }
+        $controller = $this->createObject($controllerClass);
 
         if (!$controller instanceof Controller) {
             throw new RuntimeException(sprintf('%s is not instance of %s', $controllerClass, Controller::class));
@@ -236,5 +199,76 @@ abstract class Module implements RequestHandlerInterface
         $this->trigger($event);
 
         return $event->controller;
+    }
+
+    /**
+     * Create an object with constructor dependencies resolved from registered components.
+     *
+     * @param class-string $class The class to instantiate.
+     * @param array<string, mixed> $overrides Constructor argument overrides indexed by parameter name.
+     * @throws RuntimeException If class is not found or mandatory dependency is not resolvable.
+     */
+    public function createObject(string $class, array $overrides = []): object
+    {
+        if (!class_exists($class)) {
+            throw new RuntimeException("Class '{$class}' does not exist.");
+        }
+
+        $reflection = new ReflectionClass($class);
+        $constructor = $reflection->getConstructor();
+
+        if (!$constructor) {
+            return $reflection->newInstance();
+        }
+
+        $args = array_map(
+            fn(ReflectionParameter $param) => $this->resolveConstructorArgument($param, $class, $overrides),
+            $constructor->getParameters()
+        );
+
+        return $reflection->newInstanceArgs($args);
+    }
+
+    /**
+     * Resolve one constructor argument from overrides or application components.
+     *
+     * @param array<string, mixed> $overrides
+     * @return mixed
+     * @throws RuntimeException
+     */
+    private function resolveConstructorArgument(ReflectionParameter $param, string $class, array $overrides)
+    {
+        if (array_key_exists($param->getName(), $overrides)) {
+            return $overrides[$param->getName()];
+        }
+
+        $paramType = $param->getType();
+        $type = $paramType instanceof ReflectionNamedType ? $paramType->getName() : '';
+
+        if ($paramType instanceof ReflectionNamedType && !$paramType->isBuiltin()) {
+            try {
+                return $this->getApplication()->getComponent($type);
+            } catch (RuntimeException $e) {
+                // Fall through and handle optionals/defaults below.
+            }
+        }
+
+        if ($param->isDefaultValueAvailable()) {
+            return $param->getDefaultValue();
+        }
+
+        if ($paramType instanceof ReflectionNamedType && $paramType->allowsNull()) {
+            return null;
+        }
+
+        if ($param->isOptional()) {
+            return null;
+        }
+
+        $msg = "The class {$class} "
+            . "Cannot be instanciated because the component {$type} was not found "
+            . "and cannot be assigned to the constructor argument \${$param->getName()}.";
+
+        throw new RuntimeException($msg);
     }
 }

@@ -214,6 +214,40 @@ class ModularApplicationTest extends TestCase
         $this->app->run($this->createRequest('/test/user/index'));
     }
 
+    public function testControllerCreateObject()
+    {
+        $this->expectOutputString('TestModule::TestController::createObjectAction');
+        $this->app->run($this->createRequest('/test/test/create-object'), false);
+    }
+
+    public function testControllerCreateObjectMissingDependency()
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessageMatches('~Cannot be instanciated because the component~');
+        $this->app->run($this->createRequest('/test/test/create-object-missing-dependency'));
+    }
+
+    public function testControllerCreateObjectWithNullableDependency()
+    {
+        $this->expectOutputString('TestModule::TestController::createObjectNullableDependencyAction');
+        $this->app->run($this->createRequest('/test/test/create-object-nullable-dependency'), false);
+    }
+
+    public function testControllerCreateObjectWithOptionalDependency()
+    {
+        $this->expectOutputString('TestModule::TestController::createObjectOptionalDependencyAction');
+        $this->app->run($this->createRequest('/test/test/create-object-optional-dependency'), false);
+    }
+
+    public function testCreateObjectWithUnknownClass()
+    {
+        $module = $this->app->getModule('test');
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage("Class 'Piko\\Tests\\lib\\UnknownClass' does not exist.");
+        $module->createObject('Piko\\Tests\\lib\\UnknownClass');
+    }
+
     /**
      * @runInSeparateProcess
      * @preserveGlobalState disabled
